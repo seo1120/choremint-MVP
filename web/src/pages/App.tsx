@@ -19,14 +19,14 @@ export default function ParentLogin() {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/dashboard');
+        navigate('/parent/home');
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        navigate('/dashboard');
+        navigate('/parent/home');
       }
     });
 
@@ -67,7 +67,7 @@ export default function ParentLogin() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/parent/home`,
         },
       });
       if (error) throw error;

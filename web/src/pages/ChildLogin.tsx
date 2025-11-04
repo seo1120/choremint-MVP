@@ -15,8 +15,8 @@ export default function ChildLogin() {
     if (childSession) {
       try {
         const session = JSON.parse(childSession);
-        if (session.pin && session.nickname) {
-          navigate('/child-dashboard');
+        if (session.childId && session.nickname && session.familyId) {
+          navigate('/child/today');
         }
       } catch (e) {
         localStorage.removeItem('child_session');
@@ -78,10 +78,10 @@ export default function ChildLogin() {
         loggedInAt: Date.now(),
       };
 
-      localStorage.setItem('child_session', JSON.stringify(childSession));
-      
-      // Navigate to child dashboard
-      navigate('/child-dashboard');
+             localStorage.setItem('child_session', JSON.stringify(childSession));
+             
+             // Navigate to child dashboard
+             navigate('/child/today');
     } catch (err: any) {
       setError(err.message || '로그인 중 오류가 발생했습니다.');
     } finally {
