@@ -9,8 +9,14 @@ interface IconProps {
 }
 
 export default function Icon({ name, className = '', size = 24, active = false }: IconProps) {
-  // 아이콘 이미지 경로 (SVG 우선)
-  const iconPathSvg = `/icons/${name}.svg`;
+  // 템플릿 아이콘 목록 (chores 폴더에서 가져옴)
+  const choreIcons = ['bed', 'dog', 'broom', 'trash-can', 'dining', 'plant', 'shoe'];
+  const isChoreIcon = choreIcons.includes(name);
+  
+  // 아이콘 이미지 경로 (템플릿 아이콘은 chores 폴더에서, 나머지는 루트에서)
+  const iconPathSvg = isChoreIcon 
+    ? `/icons/chores/${name}.svg`
+    : `/icons/${name}.svg`;
   const [svgContent, setSvgContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
   

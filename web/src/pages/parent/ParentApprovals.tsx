@@ -105,8 +105,8 @@ export default function ParentApprovals() {
         const points = submission.chore?.points || 10;
         await sendPushNotification(
           submission.child_id,
-          '축하합니다! 🎉',
-          `${submission.chore?.title || '집안일'}이 승인되어 ${points}점을 받았습니다!`,
+          'Congratulations! 🎉',
+          `${submission.chore?.title || 'Chore'} approved! You received ${points} points!`,
           '/child/today'
         );
       }
@@ -114,7 +114,7 @@ export default function ParentApprovals() {
       setSelectedSubmission(null);
       loadSubmissions();
     } catch (error: any) {
-      alert(error.message || '승인 중 오류가 발생했습니다.');
+      alert(error.message || 'Error occurred while approving.');
     } finally {
       setLoading(false);
     }
@@ -133,7 +133,7 @@ export default function ParentApprovals() {
       setSelectedSubmission(null);
       loadSubmissions();
     } catch (error: any) {
-      alert(error.message || '거절 중 오류가 발생했습니다.');
+      alert(error.message || 'Error occurred while rejecting.');
     } finally {
       setLoading(false);
     }
@@ -143,12 +143,12 @@ export default function ParentApprovals() {
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-4">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">승인 대기</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Pending Approvals</h1>
         </div>
 
         {submissions.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <p className="text-gray-500">승인 대기 중인 제출물이 없습니다.</p>
+            <p className="text-gray-500">No pending submissions.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -200,7 +200,7 @@ export default function ParentApprovals() {
                 </h3>
                 {selectedSubmission.chore && (
                   <p className="text-gray-600 mb-4 flex items-center gap-1">
-                    {selectedSubmission.chore.title} - <Icon name="star" size={16} /> {selectedSubmission.chore.points}점
+                    {selectedSubmission.chore.title} - <Icon name="star" size={16} /> {selectedSubmission.chore.points} pts
                   </p>
                 )}
                 <div className="flex gap-4">
@@ -209,14 +209,14 @@ export default function ParentApprovals() {
                     disabled={loading}
                     className="flex-1 px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 font-bold"
                   >
-                    승인
+                    Approve
                   </button>
                   <button
                     onClick={() => handleReject(selectedSubmission.id)}
                     disabled={loading}
                     className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 font-bold"
                   >
-                    거절
+                    Reject
                   </button>
                 </div>
               </div>

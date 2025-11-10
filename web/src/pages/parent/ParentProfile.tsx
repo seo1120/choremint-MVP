@@ -48,7 +48,7 @@ export default function ParentProfile() {
             .from('profiles')
             .insert({
               user_id: session.user.id,
-              name: session.user.email?.split('@')[0] || '부모',
+              name: session.user.email?.split('@')[0] || 'Parent',
               role: 'parent',
               family_id: familyData.id,
               notif_opt_in: true,
@@ -88,7 +88,7 @@ export default function ParentProfile() {
     setSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('로그인이 필요합니다.');
+      if (!session) throw new Error('Login required.');
 
       const { error } = await supabase
         .from('profiles')
@@ -101,10 +101,10 @@ export default function ParentProfile() {
 
       if (error) throw error;
 
-      alert('프로필이 저장되었습니다!');
+      alert('Profile saved!');
       loadData();
     } catch (error: any) {
-      alert(error.message || '저장 중 오류가 발생했습니다.');
+      alert(error.message || 'Error occurred while saving.');
     } finally {
       setSaving(false);
     }
@@ -118,7 +118,7 @@ export default function ParentProfile() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pb-20">
-        <p className="text-gray-600">로딩 중...</p>
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
@@ -127,12 +127,12 @@ export default function ParentProfile() {
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-4">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">프로필</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile</h1>
 
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                가족명
+                Family Name
               </label>
               <input
                 type="text"
@@ -144,7 +144,7 @@ export default function ParentProfile() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                가족 코드
+                Family Code
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -156,19 +156,19 @@ export default function ParentProfile() {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(family?.family_code || '');
-                    alert('가족 코드가 복사되었습니다!');
+                    alert('Family code copied!');
                   }}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
-                  복사
+                  Copy
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
-                <p className="font-semibold text-gray-800">알림 수신</p>
-                <p className="text-sm text-gray-600">푸시 알림을 받으시겠습니까?</p>
+                <p className="font-semibold text-gray-800">Notifications</p>
+                <p className="text-sm text-gray-600">Receive push notifications?</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -187,13 +187,13 @@ export default function ParentProfile() {
                 disabled={saving}
                 className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 font-bold"
               >
-                저장
+                Save
               </button>
               <button
                 onClick={handleLogout}
                 className="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-bold"
               >
-                로그아웃
+                Logout
               </button>
             </div>
           </div>

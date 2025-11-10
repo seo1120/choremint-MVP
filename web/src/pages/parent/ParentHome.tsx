@@ -48,7 +48,7 @@ export default function ParentHome() {
     if (!family) return;
     
     // Subscribe to new submissions with family_id filter
-    const channel = supabase
+    const submissionsChannel = supabase
       .channel('parent-home-submissions')
       .on(
         'postgres_changes',
@@ -71,8 +71,27 @@ export default function ParentHome() {
         }
       });
 
+    // Subscribe to points_ledger updates to refresh children points
+    const pointsLedgerChannel = supabase
+      .channel('parent-home-points-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE 모두 감지
+          schema: 'public',
+          table: 'points_ledger',
+        },
+        (payload) => {
+          console.log('Points ledger updated:', payload);
+          // 포인트가 변경되면 데이터 다시 로드
+          loadData();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(submissionsChannel);
+      supabase.removeChannel(pointsLedgerChannel);
     };
   }, [family]);
 
@@ -227,19 +246,43 @@ export default function ParentHome() {
   const loadChildrenAndData = async (familyId: string) => {
     try {
       console.log('Loading children for family:', familyId);
-      // Load children
+      // Load children with points from child_points_view
       const { data: childrenData, error: childrenError } = await supabase
         .from('children')
-        .select('*')
+        .select('id, nickname, family_id, created_at')
         .eq('family_id', familyId)
         .order('created_at', { ascending: false });
 
       if (childrenError) {
         console.error('Error loading children:', childrenError);
         setChildren([]);
-      } else if (childrenData) {
-        console.log('Children loaded:', childrenData.length);
-        setChildren(childrenData);
+      } else if (childrenData && childrenData.length > 0) {
+        // Get points from child_points_view
+        const childIds = childrenData.map(c => c.id);
+        const { data: pointsData } = await supabase
+          .from('child_points_view')
+          .select('child_id, total_points')
+          .in('child_id', childIds);
+        
+          // Merge points data with children data
+          let childrenWithPoints: Child[] = [];
+          if (pointsData) {
+            const pointsMap = new Map(pointsData.map(p => [p.child_id, p.total_points]));
+            childrenWithPoints = childrenData.map(child => ({
+              id: child.id,
+              nickname: child.nickname,
+              points: pointsMap.get(child.id) || 0,
+            }));
+          } else {
+            childrenWithPoints = childrenData.map(child => ({
+              id: child.id,
+              nickname: child.nickname,
+              points: 0,
+            }));
+          }
+        
+        console.log('Children loaded:', childrenWithPoints.length);
+        setChildren(childrenWithPoints);
       } else {
         console.log('No children found');
         setChildren([]);
@@ -332,22 +375,22 @@ export default function ParentHome() {
   const copyFamilyCode = () => {
     if (family?.family_code) {
       navigator.clipboard.writeText(family.family_code);
-      alert('가족 코드가 복사되었습니다!');
+      alert('Family code copied!');
     }
   };
 
   const handleAddChild = async () => {
     if (!newNickname || !newPin) {
-      alert('닉네임과 PIN을 모두 입력해주세요.');
+      alert('Please enter both nickname and PIN.');
       return;
     }
 
     setAddingChild(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('로그인이 필요합니다.');
+      if (!session) throw new Error('Login required.');
 
-      if (!family) throw new Error('가족 정보를 찾을 수 없습니다.');
+      if (!family) throw new Error('Family information not found.');
 
       const { error } = await supabase
         .from('children')
@@ -365,7 +408,7 @@ export default function ParentHome() {
       setShowAddChild(false);
       loadData();
     } catch (error: any) {
-      alert(error.message || '자녀 추가 중 오류가 발생했습니다.');
+      alert(error.message || 'Error occurred while adding child.');
     } finally {
       setAddingChild(false);
     }
@@ -376,8 +419,8 @@ export default function ParentHome() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-          <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
+          <p className="text-gray-600">Loading...</p>
+          <p className="text-sm text-gray-500 mt-2">Please wait</p>
         </div>
       </div>
     );
@@ -390,96 +433,95 @@ export default function ParentHome() {
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">홈</h1>
-              <p className="text-gray-600 text-sm mt-1">가족 코드: 
-                <span className="font-mono font-bold ml-2">{family?.family_code || '로딩 중...'}</span>
+              <h1 className="text-2xl font-bold text-gray-800">Home</h1>
+              <p className="text-gray-600 text-sm mt-1">Family Code: 
+                <span className="font-mono font-bold ml-2">{family?.family_code || 'Loading...'}</span>
               </p>
             </div>
             <button
               onClick={copyFamilyCode}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+              className="px-4 py-2 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors text-sm"
             >
-              복사
+              Copy
             </button>
           </div>
           <button
             onClick={() => setShowAddChild(!showAddChild)}
-            className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+            className="w-full px-4 py-2 bg-gradient-to-r from-[#FF7F7F] to-[#FFB6C1] text-white rounded-lg hover:from-[#FF6B6B] hover:to-[#FFA5B0] transition-colors text-sm font-medium"
           >
-            {showAddChild ? '취소' : '+ 자녀 추가'}
+            {showAddChild ? 'Cancel' : '+ Add Child'}
           </button>
           {showAddChild && (
             <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-3">
               <input
                 type="text"
-                placeholder="닉네임"
+                placeholder="Nickname"
                 value={newNickname}
                 onChange={(e) => setNewNickname(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5CE1C6]"
               />
               <input
                 type="text"
                 placeholder="PIN"
                 value={newPin}
                 onChange={(e) => setNewPin(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5CE1C6]"
               />
               <button
                 onClick={handleAddChild}
                 disabled={addingChild}
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-2 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors disabled:opacity-50"
               >
-                {addingChild ? '추가 중...' : '추가'}
+                {addingChild ? 'Adding...' : 'Add'}
               </button>
             </div>
           )}
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          {/* 승인 대기 */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {/* Pending Approvals */}
+          <div 
+            onClick={() => navigate('/parent/approvals')}
+            className="bg-gradient-to-br from-[#5CE1C6] to-[#4BC9B0] rounded-2xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm mb-1">승인 대기</p>
-                <p className="text-3xl font-bold text-blue-600">{pendingCount}건</p>
+                <p className="text-white text-sm mb-1 opacity-90">Pending</p>
+                <p className="text-3xl font-bold text-white">{pendingCount}</p>
               </div>
-              <button
-                onClick={() => navigate('/parent/approvals')}
-                className="text-4xl">✅</button>
             </div>
           </div>
 
-          {/* 이번주 지급합계 */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
+          {/* Weekly Points */}
+          <div className="bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm mb-1">이번주 지급합계</p>
-                <p className="text-3xl font-bold text-green-600">{weeklyPoints}점</p>
+                <p className="text-white text-sm mb-1 opacity-90">Weekly Total</p>
+                <p className="text-3xl font-bold text-white">{weeklyPoints} pts</p>
               </div>
-              <span className="text-4xl">💰</span>
             </div>
           </div>
         </div>
 
-        {/* 자녀별 진행 */}
+        {/* Children Progress */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">자녀별 진행</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Children Progress</h2>
           {children.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">등록된 자녀가 없습니다.</p>
+            <p className="text-gray-500 text-center py-8">No children registered.</p>
           ) : (
             <div className="space-y-4">
               {children.map((child) => {
-                const progress = Math.min(100, (child.points / 100) * 100); // 예시: 100점 = 100%
+                const progress = Math.min(100, (child.points / 100) * 100); // Example: 100 points = 100%
                 return (
                   <div key={child.id} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-gray-800">{child.nickname}</span>
-                      <span className="text-sm text-gray-600">{child.points}점</span>
+                      <span className="text-sm text-gray-600">{child.points} pts</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
-                        className="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-300"
+                        className="bg-gradient-to-r from-[#5CE1C6] to-[#FF7F7F] h-3 rounded-full transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

@@ -5,6 +5,11 @@ import ChildTabNav from '../../components/ChildTabNav';
 import Icon from '../../components/Icon';
 import { initializePushNotifications } from '../../lib/pushNotifications';
 
+interface ChoreStep {
+  order: number;
+  description: string;
+}
+
 interface ChoreAssignment {
   id: string;
   chore_id: string;
@@ -15,6 +20,8 @@ interface ChoreAssignment {
     title: string;
     points: number;
     photo_required: boolean;
+    steps?: ChoreStep[];
+    icon?: string;
   };
 }
 
@@ -34,6 +41,8 @@ export default function ChildToday() {
   const [exp, setExp] = useState(0);
   const [nextLevelExp, setNextLevelExp] = useState(100);
   const [characterMood, setCharacterMood] = useState<'happy' | 'normal' | 'sleepy'>('happy');
+  const [selectedAssignment, setSelectedAssignment] = useState<ChoreAssignment | null>(null);
+  const [showChoreDetail, setShowChoreDetail] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,15 +55,15 @@ export default function ChildToday() {
     let parsedSession: ChildSession;
     try {
       parsedSession = JSON.parse(session);
-      setChildSession(parsedSession);
+        setChildSession(parsedSession);
       calculateLevel(parsedSession.points);
-      loadAssignments(parsedSession.childId);
+        loadAssignments(parsedSession.childId);
       // 초기 로드 시 최신 포인트 가져오기
       loadLatestPoints(parsedSession.childId);
       
       // 자녀 로그인 시 푸시 알림 구독
       initializePushNotifications(parsedSession.childId, true);
-    } catch (e) {
+      } catch (e) {
       navigate('/');
       return;
     }
@@ -99,26 +108,22 @@ export default function ChildToday() {
       )
       .subscribe();
 
-    // Subscribe to children table updates (포인트 실시간 갱신)
-    const childrenChannel = supabase
+    // Subscribe to points_ledger updates (포인트 실시간 갱신)
+    // child_points_view는 뷰이므로 직접 구독할 수 없으므로 points_ledger를 구독
+    const pointsLedgerChannel = supabase
       .channel('child-points-updates')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*', // INSERT, UPDATE, DELETE 모두 감지
           schema: 'public',
-          table: 'children',
-          filter: `id=eq.${parsedSession.childId}`,
+          table: 'points_ledger',
+          filter: `child_id=eq.${parsedSession.childId}`,
         },
         (payload) => {
-          console.log('Child points updated:', payload);
-          // 포인트가 업데이트되면 세션과 상태 업데이트
-          if (payload.new.points !== undefined) {
-            const updatedSession = { ...parsedSession, points: payload.new.points };
-            localStorage.setItem('child_session', JSON.stringify(updatedSession));
-            setChildSession(updatedSession);
-            calculateLevel(payload.new.points);
-          }
+          console.log('Points ledger updated:', payload);
+          // 포인트 내역이 변경되면 최신 포인트 다시 로드
+          loadLatestPoints(parsedSession.childId);
         }
       )
       .subscribe();
@@ -126,26 +131,56 @@ export default function ChildToday() {
     return () => {
       supabase.removeChannel(assignmentsChannel);
       supabase.removeChannel(submissionsChannel);
-      supabase.removeChannel(childrenChannel);
+      supabase.removeChannel(pointsLedgerChannel);
     };
   }, [navigate]);
 
   const loadAssignments = async (childId: string) => {
     try {
       const today = new Date().toISOString().split('T')[0];
+      console.log('Loading assignments for child:', childId, 'on date:', today);
       
-      const { data } = await supabase
+      // First, check if we can query the table at all
+      const { data: testData, error: testError } = await supabase
+        .from('chore_assignments')
+        .select('id')
+        .eq('child_id', childId)
+        .limit(1);
+      
+      console.log('Test query result:', { testData, testError });
+      
+      // Load all pending assignments (not just today's)
+      const { data, error } = await supabase
         .from('chore_assignments')
         .select(`
           *,
-          chore:chores(*)
+          chore:chores(
+            id,
+            title,
+            points,
+            photo_required,
+            active,
+            steps,
+            icon
+          )
         `)
         .eq('child_id', childId)
-        .eq('due_date', today)
         .eq('status', 'todo')
+        .gte('due_date', today) // Show assignments due today or in the future
+        .order('due_date', { ascending: true })
         .order('created_at', { ascending: false });
 
-      if (data) {
+      if (error) {
+        console.error('Error loading assignments:', error);
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+      } else {
+        console.log('Loaded assignments:', data);
+        console.log('Number of assignments:', data?.length || 0);
         setAssignments(data as ChoreAssignment[]);
       }
     } catch (error) {
@@ -157,10 +192,11 @@ export default function ChildToday() {
 
   const loadLatestPoints = async (childId: string) => {
     try {
+      // Use child_points_view for real-time accurate points from points_ledger
       const { data } = await supabase
-        .from('children')
-        .select('points')
-        .eq('id', childId)
+        .from('child_points_view')
+        .select('total_points')
+        .eq('child_id', childId)
         .single();
 
       if (data) {
@@ -168,10 +204,10 @@ export default function ChildToday() {
         if (session) {
           try {
             const parsedSession: ChildSession = JSON.parse(session);
-            const updatedSession = { ...parsedSession, points: data.points };
+            const updatedSession = { ...parsedSession, points: data.total_points };
             localStorage.setItem('child_session', JSON.stringify(updatedSession));
             setChildSession(updatedSession);
-            calculateLevel(data.points);
+            calculateLevel(data.total_points);
           } catch (e) {
             console.error('Error updating session:', e);
           }
@@ -205,6 +241,21 @@ export default function ChildToday() {
 
   const handleUpload = (choreId: string) => {
     navigate(`/child/upload?chore_id=${choreId}`);
+  };
+
+  const handleChoreClick = (assignment: ChoreAssignment) => {
+    setSelectedAssignment(assignment);
+    setShowChoreDetail(true);
+  };
+
+  const calculateDaysUntilDue = (dueDate: string): number => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    due.setHours(0, 0, 0, 0);
+    const diffTime = due.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
   if (loading || !childSession) {
@@ -389,40 +440,108 @@ export default function ChildToday() {
               />
             </div>
           </div>
-          </div>
+        </div>
 
-          {/* Today's Chores */}
-          {assignments.length === 0 ? (
-            <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
+        {/* Today's Chores */}
+        {assignments.length === 0 ? (
+          <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
               <p className="text-gray-500 text-lg">No chores today! 🎉</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-            {assignments.map((assignment) => (
-              <div
-                key={assignment.id}
-                className="bg-white rounded-2xl shadow-lg p-4 cursor-pointer hover:shadow-xl transition-shadow"
-                onClick={() => handleUpload(assignment.chore.id)}
-              >
-                <div className="text-center">
-                  <div className="text-4xl mb-2">🧹</div>
-                  <h3 className="font-bold text-gray-800 mb-2 text-sm">
-                    {assignment.chore.title}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            {assignments.map((assignment) => {
+              const daysUntilDue = calculateDaysUntilDue(assignment.due_date);
+              const daysText = daysUntilDue === 0 ? 'D-Day' : daysUntilDue > 0 ? `D-${daysUntilDue}` : `D+${Math.abs(daysUntilDue)}`;
+              
+              return (
+                <div
+                  key={assignment.id}
+                  onClick={() => handleChoreClick(assignment)}
+                  className="bg-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-shadow cursor-pointer"
+                >
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+                      {assignment.chore.icon && !assignment.chore.icon.match(/[\u{1F300}-\u{1F9FF}]/u) ? (
+                        <Icon name={assignment.chore.icon} size={32} />
+                      ) : assignment.chore.icon ? (
+                        <span className="text-3xl">{assignment.chore.icon}</span>
+                      ) : (
+                        <Icon name="chore" size={32} />
+                      )}
+                    </div>
+                    <h3 className="font-bold text-gray-800 mb-2 text-sm">
+                      {assignment.chore.title}
+                    </h3>
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      <Icon name="star" size={16} className="text-yellow-500" />
+                      <span className="text-sm font-semibold text-gray-700">
+                        {assignment.chore.points} pts
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#5CE1C6] font-semibold">
+                      {daysText}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Chore Detail Modal */}
+        {showChoreDetail && selectedAssignment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    {selectedAssignment.chore.title}
                   </h3>
-                  <div className="flex items-center justify-center gap-1 mb-3">
-                    <Icon name="star" size={16} className="text-yellow-500" />
-                    <span className="text-sm font-semibold text-gray-700">
-                      {assignment.chore.points} pts
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon name="star" size={16} />
+                    <span className="text-gray-600">{selectedAssignment.chore.points} points</span>
+                    <span className="text-[#5CE1C6] font-semibold ml-2">
+                      {(() => {
+                        const days = calculateDaysUntilDue(selectedAssignment.due_date);
+                        return days === 0 ? 'D-Day' : days > 0 ? `D-${days}` : `D+${Math.abs(days)}`;
+                      })()}
                     </span>
                   </div>
-                  <button className="w-full px-3 py-2 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-lg hover:from-orange-500 hover:to-pink-500 transition-colors text-sm font-medium">
-                    📸 Upload
-                  </button>
                 </div>
+                <button
+                  onClick={() => setShowChoreDetail(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
               </div>
-            ))}
+
+              {selectedAssignment.chore.steps && selectedAssignment.chore.steps.length > 0 ? (
+                <div className="space-y-3 mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-2">Steps:</h4>
+                  {selectedAssignment.chore.steps.map((step: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <span className="font-bold text-[#5CE1C6] w-6">{step.order}.</span>
+                      <p className="text-gray-700 flex-1">{step.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4 mb-6">No steps defined</p>
+              )}
+
+              <button
+                onClick={() => {
+                  setShowChoreDetail(false);
+                  handleUpload(selectedAssignment.chore.id);
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-lg hover:from-orange-500 hover:to-pink-500 transition-colors font-bold"
+              >
+                📸 Upload Photo
+              </button>
             </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
       <ChildTabNav />

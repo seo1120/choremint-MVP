@@ -42,50 +42,27 @@ export default function ChildRewards() {
       return;
     }
 
-    // Subscribe to children table updates (포인트 실시간 갱신)
-    const childrenChannel = supabase
+    // Subscribe to points_ledger updates (포인트 실시간 갱신)
+    // child_points_view는 뷰이므로 직접 구독할 수 없으므로 points_ledger를 구독
+    const pointsLedgerChannel = supabase
       .channel('child-rewards-points-updates')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'children',
-          filter: `id=eq.${parsedSession.childId}`,
-        },
-        (payload) => {
-          console.log('Child points updated:', payload);
-          // 포인트가 업데이트되면 세션과 상태 업데이트
-          if (payload.new.points !== undefined) {
-            const updatedSession = { ...parsedSession, points: payload.new.points };
-            localStorage.setItem('child_session', JSON.stringify(updatedSession));
-            setChildSession(updatedSession);
-          }
-        }
-      )
-      .subscribe();
-
-    // Subscribe to points_ledger updates (포인트 내역 실시간 갱신)
-    const pointsLedgerChannel = supabase
-      .channel('child-rewards-ledger-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
+          event: '*', // INSERT, UPDATE, DELETE 모두 감지
           schema: 'public',
           table: 'points_ledger',
           filter: `child_id=eq.${parsedSession.childId}`,
         },
         (payload) => {
-          console.log('New points ledger entry:', payload);
-          // 포인트 내역 새로고침 (최신 포인트도 함께 가져옴)
+          console.log('Points ledger updated:', payload);
+          // 포인트 내역이 변경되면 최신 포인트 다시 로드
           loadPointsHistory(parsedSession.childId);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(childrenChannel);
       supabase.removeChannel(pointsLedgerChannel);
     };
   }, [navigate]);
@@ -93,17 +70,18 @@ export default function ChildRewards() {
   const loadPointsHistory = async (childId: string) => {
     try {
       // 포인트 내역과 함께 최신 포인트도 가져오기
-      const [historyResult, childResult] = await Promise.all([
+      const [historyResult, pointsResult] = await Promise.all([
         supabase
           .from('points_ledger')
           .select('*')
           .eq('child_id', childId)
           .order('created_at', { ascending: false })
           .limit(50),
+        // Use child_points_view for real-time accurate points from points_ledger
         supabase
-          .from('children')
-          .select('points')
-          .eq('id', childId)
+          .from('child_points_view')
+          .select('total_points')
+          .eq('child_id', childId)
           .single()
       ]);
 
@@ -112,12 +90,12 @@ export default function ChildRewards() {
       }
 
       // 최신 포인트로 세션 업데이트
-      if (childResult.data) {
+      if (pointsResult.data) {
         const session = localStorage.getItem('child_session');
         if (session) {
           try {
             const parsedSession: ChildSession = JSON.parse(session);
-            const updatedSession = { ...parsedSession, points: childResult.data.points };
+            const updatedSession = { ...parsedSession, points: pointsResult.data.total_points };
             localStorage.setItem('child_session', JSON.stringify(updatedSession));
             setChildSession(updatedSession);
           } catch (e) {

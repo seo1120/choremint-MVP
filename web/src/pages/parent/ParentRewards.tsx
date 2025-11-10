@@ -45,15 +45,42 @@ export default function ParentRewards() {
         .single();
 
       if (familyData) {
-        // Load children
+        // Load children with points from child_points_view
         const { data: childrenData } = await supabase
           .from('children')
-          .select('*')
-          .eq('family_id', familyData.id)
-          .order('points', { ascending: false });
+          .select('id, nickname, family_id, created_at')
+          .eq('family_id', familyData.id);
+        
+        // Get points from child_points_view
+        if (childrenData && childrenData.length > 0) {
+          const childIds = childrenData.map(c => c.id);
+          const { data: pointsData } = await supabase
+            .from('child_points_view')
+            .select('child_id, total_points')
+            .in('child_id', childIds);
+          
+          // Merge points data with children data
+          let childrenWithPoints: Child[] = [];
+          if (pointsData) {
+            const pointsMap = new Map(pointsData.map(p => [p.child_id, p.total_points]));
+            childrenWithPoints = childrenData.map(child => ({
+              id: child.id,
+              nickname: child.nickname,
+              points: pointsMap.get(child.id) || 0,
+            }));
+            // Sort by points
+            childrenWithPoints.sort((a, b) => b.points - a.points);
+          } else {
+            childrenWithPoints = childrenData.map(child => ({
+              id: child.id,
+              nickname: child.nickname,
+              points: 0,
+            }));
+          }
 
-        if (childrenData) {
-          setChildren(childrenData);
+          setChildren(childrenWithPoints);
+        } else {
+          setChildren([]);
         }
 
         // Load points history
@@ -91,7 +118,7 @@ export default function ParentRewards() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white pb-20">
-        <p className="text-gray-600">로딩 중...</p>
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
@@ -100,14 +127,14 @@ export default function ParentRewards() {
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-4">
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">보상</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Rewards</h1>
         </div>
 
         {/* Children Points Summary */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">자녀별 포인트</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Children Points</h2>
           {children.length === 0 ? (
-            <p className="text-gray-500">등록된 자녀가 없습니다.</p>
+            <p className="text-gray-500">No children registered.</p>
           ) : (
             <div className="space-y-3">
               {children.map((child) => (
@@ -115,7 +142,7 @@ export default function ParentRewards() {
                   <span className="font-semibold text-gray-800">{child.nickname}</span>
                   <span className="text-2xl font-bold text-blue-600 flex items-center gap-1">
                     <Icon name="star" size={20} className="md:w-6 md:h-6" />
-                    {child.points}점
+                    {child.points} pts
                   </span>
                 </div>
               ))}
@@ -125,9 +152,9 @@ export default function ParentRewards() {
 
         {/* Points History */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">포인트 내역</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Points History</h2>
           {pointsHistory.length === 0 ? (
-            <p className="text-gray-500">포인트 내역이 없습니다.</p>
+            <p className="text-gray-500">No points history.</p>
           ) : (
             <div className="space-y-2">
               {pointsHistory.map((entry) => (
@@ -140,7 +167,7 @@ export default function ParentRewards() {
                     </p>
                   </div>
                   <span className={`text-lg font-bold ${entry.delta > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {entry.delta > 0 ? '+' : ''}{entry.delta}점
+                    {entry.delta > 0 ? '+' : ''}{entry.delta} pts
                   </span>
                 </div>
               ))}
