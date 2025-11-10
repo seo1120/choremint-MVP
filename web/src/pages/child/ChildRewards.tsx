@@ -134,45 +134,45 @@ export default function ChildRewards() {
 
   if (loading || !childSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
-        <p className="text-gray-600">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white pb-20">
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
+    <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto p-4">
         {/* Points Summary */}
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-4">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
               <Icon name="star" size={24} className="md:w-8 md:h-8" />
-              {childSession.points}점
+              {childSession.points} pts
             </h1>
-            <p className="text-gray-600">보유 포인트</p>
+            <p className="text-gray-600">Total Points</p>
           </div>
         </div>
 
         {/* Points History */}
         <div className="bg-white rounded-3xl shadow-xl p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">포인트 내역</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Points History</h2>
           {pointsHistory.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">포인트 내역이 없습니다.</p>
+            <p className="text-gray-500 text-center py-8">No points history yet.</p>
           ) : (
             <div className="space-y-3">
               {pointsHistory.map((entry) => (
                 <div key={entry.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium text-gray-800">
-                      {entry.reason === 'chore_approved' ? '집안일 완료' : entry.reason}
+                      {entry.reason === 'chore_approved' ? 'Chore Completed' : entry.reason}
                     </p>
                     <p className="text-xs text-gray-500">
                       {new Date(entry.created_at).toLocaleString()}
                     </p>
                   </div>
                   <span className={`text-lg font-bold ${entry.delta > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {entry.delta > 0 ? '+' : ''}{entry.delta}점
+                    {entry.delta > 0 ? '+' : ''}{entry.delta} pts
                   </span>
                 </div>
               ))}

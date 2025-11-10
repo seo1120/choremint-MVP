@@ -373,7 +373,7 @@ export default function ParentHome() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">로딩 중...</p>
@@ -384,7 +384,7 @@ export default function ParentHome() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-20">
+    <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-4">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">

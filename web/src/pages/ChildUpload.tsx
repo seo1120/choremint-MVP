@@ -118,7 +118,7 @@ export default function ChildUpload() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Header with greeting */}
         <div className="bg-white rounded-3xl shadow-lg p-6 mb-4">

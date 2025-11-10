@@ -14,7 +14,7 @@ export default function ChildHome() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-3xl shadow-xl p-8 text-center">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">ChoreMint</h1>

@@ -151,12 +151,12 @@ export default function ChildUpload() {
           .eq('due_date', today);
       }
 
-      alert('사진이 성공적으로 업로드되었습니다!');
+      alert('Photo uploaded successfully!');
       setSelectedFile(null);
       setPreview('');
       navigate('/child/today');
     } catch (err: any) {
-      setError(err.message || '업로드 중 오류가 발생했습니다.');
+      setError(err.message || 'Upload failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -164,26 +164,26 @@ export default function ChildUpload() {
 
   if (!childSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
-        <p className="text-gray-600">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white pb-20">
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
+    <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md w-full mx-auto p-4">
         {/* Header */}
         <div className="bg-white rounded-3xl shadow-lg p-6 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-2xl font-bold text-gray-800">
-              {chore ? chore.title : '사진 업로드'}
+              {chore ? chore.title : 'Photo Upload'}
             </h1>
             {chore && (
               <div className="bg-green-100 rounded-full px-4 py-2 flex items-center gap-1">
                 <Icon name="star" size={16} />
                 <span className="text-green-700 font-semibold text-sm">
-                  {chore.points}점
+                  {chore.points} pts
                 </span>
               </div>
             )}
@@ -226,7 +226,7 @@ export default function ChildUpload() {
           {/* Photo Upload Card */}
           <div className="bg-white rounded-2xl p-5 shadow-md border-2 border-green-100">
             <label className="block text-sm font-semibold text-gray-700 mb-3">
-              📸 사진 선택
+              Select Photo
             </label>
             <input
               type="file"
@@ -240,7 +240,7 @@ export default function ChildUpload() {
           {/* Preview Card */}
           {preview && (
             <div className="bg-gray-50 rounded-2xl p-4 shadow-md border-2 border-gray-100">
-              <p className="text-sm font-semibold text-gray-700 mb-2">📷 미리보기</p>
+              <p className="text-sm font-semibold text-gray-700 mb-2">Preview</p>
               <img
                 src={preview}
                 alt="Preview"
@@ -252,7 +252,7 @@ export default function ChildUpload() {
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-              <p className="text-sm text-red-700 font-medium">⚠️ {error}</p>
+              <p className="text-sm text-red-700 font-medium">{error}</p>
             </div>
           )}
 
@@ -264,11 +264,11 @@ export default function ChildUpload() {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span> 업로드 중...
+                <span className="animate-spin"></span> Uploading...
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
-                ✅ 완료 사진 올리기
+                Upload Photo
               </span>
             )}
           </button>

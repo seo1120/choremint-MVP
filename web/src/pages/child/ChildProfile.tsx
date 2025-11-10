@@ -61,22 +61,22 @@ export default function ChildProfile() {
 
   const handleLogout = () => {
     localStorage.removeItem('child_session');
-    navigate('/child-login');
+    navigate('/');
   };
 
   if (!childSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
-        <p className="text-gray-600">로딩 중...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white pb-20">
+        <p className="text-gray-600">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 pb-20">
+    <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto p-4">
         <div className="bg-white rounded-3xl shadow-xl p-6 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">프로필</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile</h1>
 
           <div className="space-y-6">
             <div className="text-center">
@@ -88,10 +88,10 @@ export default function ChildProfile() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">보유 포인트</span>
+                <span className="text-gray-600">Total Points</span>
                 <span className="text-2xl font-bold text-blue-600 flex items-center gap-1">
                   <Icon name="star" size={20} className="md:w-6 md:h-6" />
-                  {childSession.points}점
+                  {childSession.points} pts
                 </span>
               </div>
             </div>
@@ -100,7 +100,7 @@ export default function ChildProfile() {
               onClick={handleLogout}
               className="w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-bold"
             >
-              로그아웃
+              Logout
             </button>
           </div>
         </div>

@@ -121,7 +121,7 @@ export default function ChildDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 p-4">
+    <div className="min-h-screen bg-white p-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-3xl shadow-lg p-6 mb-4">
