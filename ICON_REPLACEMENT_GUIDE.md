@@ -4,7 +4,7 @@
 
 ## 📁 필요한 이미지 파일
 
-다음 아이콘들을 `web/public/icons/` 폴더에 SVG 또는 PNG 형식으로 준비해주세요:
+다음 아이콘들을 `web/public/icons/` 폴더에 SVG 또는 PNG 형식으로 준비해주세요
 
 ### 1. 네비게이션 아이콘
 - `home.svg` - 홈 (🏠)
