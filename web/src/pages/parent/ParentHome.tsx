@@ -20,7 +20,6 @@ export default function ParentHome() {
   const [family, setFamily] = useState<Family | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
-  const [weeklyPoints, setWeeklyPoints] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showAddChild, setShowAddChild] = useState(false);
   const [newNickname, setNewNickname] = useState('');
@@ -290,8 +289,6 @@ export default function ParentHome() {
 
       // Load pending submissions
       await loadSubmissions(familyId);
-      
-      // Load weekly points (will be called again in useEffect when children are loaded)
     } catch (error) {
       console.error('Error loading children and data:', error);
       alert(`데이터를 불러오는 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
@@ -324,53 +321,6 @@ export default function ParentHome() {
       setPendingCount(0);
     }
   };
-
-  const loadWeeklyPoints = async () => {
-    if (children.length === 0) {
-      setWeeklyPoints(0);
-      return;
-    }
-    
-    try {
-      const startOfWeek = new Date();
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-      startOfWeek.setHours(0, 0, 0, 0);
-
-      const childIds = children.map(c => c.id);
-      if (childIds.length === 0) {
-        setWeeklyPoints(0);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('points_ledger')
-        .select('delta')
-        .gte('created_at', startOfWeek.toISOString())
-        .in('child_id', childIds);
-
-      if (error) {
-        console.error('Error loading weekly points:', error);
-        setWeeklyPoints(0);
-        return;
-      }
-
-      if (data) {
-        const total = data.reduce((sum, item) => sum + item.delta, 0);
-        setWeeklyPoints(total);
-      } else {
-        setWeeklyPoints(0);
-      }
-    } catch (error) {
-      console.error('Error loading weekly points:', error);
-      setWeeklyPoints(0);
-    }
-  };
-
-  useEffect(() => {
-    if (children.length > 0 && family) {
-      loadWeeklyPoints();
-    }
-  }, [children, family]);
 
   const copyFamilyCode = () => {
     if (family?.family_code) {
@@ -479,7 +429,7 @@ export default function ParentHome() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="mb-4">
           {/* Pending Approvals */}
           <div 
             onClick={() => navigate('/parent/approvals')}
@@ -489,16 +439,6 @@ export default function ParentHome() {
               <div>
                 <p className="text-white text-sm mb-1 opacity-90">Pending</p>
                 <p className="text-3xl font-bold text-white">{pendingCount}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Weekly Points */}
-          <div className="bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white text-sm mb-1 opacity-90">Weekly Total</p>
-                <p className="text-3xl font-bold text-white">{weeklyPoints} pts</p>
               </div>
             </div>
           </div>

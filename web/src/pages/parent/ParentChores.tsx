@@ -51,10 +51,16 @@ export default function ParentChores() {
   const [selectedChoreForAssign, setSelectedChoreForAssign] = useState<string | null>(null);
   const [assignDueDate, setAssignDueDate] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const assignButtonLabel =
     children.length === 1 ? `${children[0].nickname}에게 할당` : 'Assign to All Children';
+
+  // Filter chores based on search query
+  const filteredChores = chores.filter(chore =>
+    chore.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     loadData();
@@ -588,13 +594,39 @@ export default function ParentChores() {
           )}
         </div>
 
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 mb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search chores..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              🔍
+            </span>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-4">
-          {chores.length === 0 ? (
+          {filteredChores.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-              <p className="text-gray-500">No chores registered.</p>
+              <p className="text-gray-500">
+                {searchQuery ? `No chores found matching "${searchQuery}"` : 'No chores registered.'}
+              </p>
             </div>
           ) : (
-            chores.map((chore) => (
+            filteredChores.map((chore) => (
               <div key={chore.id} className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
