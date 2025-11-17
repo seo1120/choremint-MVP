@@ -289,7 +289,7 @@ export default function Dashboard() {
               <button
                 onClick={handleAddChild}
                 disabled={loading}
-                className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors disabled:opacity-50"
               >
                 추가
               </button>
@@ -332,7 +332,7 @@ export default function Dashboard() {
                             />
                             <button
                               onClick={() => handleCopyLink(uploadUrl)}
-                              className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+                              className="px-3 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition-colors text-sm font-medium"
                             >
                               복사
                             </button>
@@ -349,7 +349,7 @@ export default function Dashboard() {
                             />
                             <button
                               onClick={() => handleCopyLink(childHomeUrl)}
-                              className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                              className="px-3 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors text-sm font-medium"
                             >
                               복사
                             </button>
@@ -390,7 +390,7 @@ export default function Dashboard() {
                     <button
                       onClick={() => handleApprove(submission.id)}
                       disabled={loading}
-                      className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                      className="w-full px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition-colors disabled:opacity-50"
                     >
                       승인 (+10점)
                     </button>

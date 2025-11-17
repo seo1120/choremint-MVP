@@ -115,7 +115,7 @@ export default function ChildProfile() {
 
             <button
               onClick={handleLogout}
-              className="w-full px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-bold"
+              className="w-full px-6 py-3 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 transition-colors font-bold"
             >
               Logout
             </button>
