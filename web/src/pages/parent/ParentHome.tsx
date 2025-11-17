@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import ParentTabNav from '../../components/ParentTabNav';
 import { initializePushNotifications } from '../../lib/pushNotifications';
+import { cache } from '../../lib/cache';
 
 interface Family {
   id: string;
@@ -103,12 +104,27 @@ export default function ParentHome() {
 
     try {
       console.log('Loading family for user:', session.user.id);
-      // Load family
-      const { data: familyData, error: familyError } = await supabase
-        .from('families')
-        .select('*')
-        .eq('parent_id', session.user.id)
-        .single();
+      
+      // Check cache first (30 minutes TTL)
+      const familyCacheKey = `family_${session.user.id}`;
+      let familyData = cache.get<any>(familyCacheKey);
+      let familyError = null;
+      
+      if (!familyData) {
+        // Load family
+        const result = await supabase
+          .from('families')
+          .select('*')
+          .eq('parent_id', session.user.id)
+          .single();
+        
+        familyData = result.data;
+        familyError = result.error;
+        
+        if (familyData) {
+          cache.set(familyCacheKey, familyData, 30 * 60 * 1000); // 30 minutes
+        }
+      }
       
       console.log('Family query result:', { familyData, familyError });
 
@@ -190,7 +206,7 @@ export default function ParentHome() {
         console.log('Family found:', familyData);
         setFamily(familyData);
         await loadChildrenAndData(familyData.id);
-      } else {
+      } else if (!familyData) {
         console.log('Family data is null, trying to create...');
         // Family doesn't exist, try to create
         const { data: { session: currentSession } } = await supabase.auth.getSession();
@@ -245,18 +261,36 @@ export default function ParentHome() {
   const loadChildrenAndData = async (familyId: string) => {
     try {
       console.log('Loading children for family:', familyId);
-      // Load children with points from child_points_view
-      const { data: childrenData, error: childrenError } = await supabase
-        .from('children')
-        .select('id, nickname, family_id, created_at')
-        .eq('family_id', familyId)
-        .order('created_at', { ascending: false });
+      
+      // Check cache first (5 minutes TTL)
+      const childrenCacheKey = `children_${familyId}`;
+      let childrenData = cache.get<any[]>(childrenCacheKey);
+      
+      if (!childrenData) {
+        // Load children with points from child_points_view
+        const { data, error: childrenError } = await supabase
+          .from('children')
+          .select('id, nickname, family_id, created_at')
+          .eq('family_id', familyId)
+          .order('created_at', { ascending: false });
+        
+        childrenData = data || null;
+        
+        if (childrenError) {
 
-      if (childrenError) {
-        console.error('Error loading children:', childrenError);
-        setChildren([]);
-      } else if (childrenData && childrenData.length > 0) {
-        // Get points from child_points_view
+          console.error('Error loading children:', childrenError);
+          setChildren([]);
+          return;
+        }
+        
+        // Cache children data (without points, as points change frequently)
+        if (childrenData) {
+          cache.set(childrenCacheKey, childrenData, 5 * 60 * 1000); // 5 minutes
+        }
+      }
+      
+      if (childrenData && childrenData.length > 0) {
+        // Get points from child_points_view (not cached, as points change frequently)
         const childIds = childrenData.map(c => c.id);
         const { data: pointsData } = await supabase
           .from('child_points_view')
@@ -353,6 +387,11 @@ export default function ParentHome() {
 
       if (error) throw error;
 
+      // Invalidate children cache when adding new child
+      if (family) {
+        cache.invalidate(`children_${family.id}`);
+      }
+
       setNewNickname('');
       setNewPin('');
       setShowAddChild(false);
@@ -397,7 +436,7 @@ export default function ParentHome() {
           </div>
           <button
             onClick={() => setShowAddChild(!showAddChild)}
-            className="w-full px-4 py-2 bg-gradient-to-r from-[#FF7F7F] to-[#FFB6C1] text-white rounded-lg hover:from-[#FF6B6B] hover:to-[#FFA5B0] transition-colors text-sm font-medium"
+            className="w-full px-4 py-2 bg-gradient-to-r from-teal-400 to-lime-400 text-white rounded-lg hover:from-teal-500 hover:to-lime-500 transition-colors text-sm font-medium"
           >
             {showAddChild ? 'Cancel' : '+ Add Child'}
           </button>

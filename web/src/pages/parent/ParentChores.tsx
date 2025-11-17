@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import ParentTabNav from '../../components/ParentTabNav';
 import Icon from '../../components/Icon';
 import { sendPushNotification } from '../../lib/pushNotifications';
+import { cache } from '../../lib/cache';
 
 interface Chore {
   id: string;
@@ -75,34 +76,60 @@ export default function ParentChores() {
     }
 
     try {
-      // Load family
-      const { data: familyData } = await supabase
-        .from('families')
-        .select('*')
-        .eq('parent_id', session.user.id)
-        .single();
+      // Load family (cached for 30 minutes)
+      const familyCacheKey = `family_${session.user.id}`;
+      let familyData = cache.get<any>(familyCacheKey);
+      
+      if (!familyData) {
+        const { data } = await supabase
+          .from('families')
+          .select('*')
+          .eq('parent_id', session.user.id)
+          .single();
+        
+        if (data) {
+          familyData = data;
+          cache.set(familyCacheKey, data, 30 * 60 * 1000); // 30 minutes
+        }
+      }
 
       if (familyData) {
-        // Load chores
-        const { data: choresData } = await supabase
-          .from('chores')
-          .select('*')
-          .eq('family_id', familyData.id)
-          .eq('active', true)
-          .order('created_at', { ascending: false });
+        // Load chores (cached for 2 minutes)
+        const choresCacheKey = `chores_${familyData.id}`;
+        const cachedChores = cache.get<Chore[]>(choresCacheKey);
+        
+        if (cachedChores) {
+          setChores(cachedChores);
+        } else {
+          const { data: choresData } = await supabase
+            .from('chores')
+            .select('*')
+            .eq('family_id', familyData.id)
+            .eq('active', true)
+            .order('created_at', { ascending: false });
 
-        if (choresData) {
-          setChores(choresData);
+          if (choresData) {
+            setChores(choresData);
+            cache.set(choresCacheKey, choresData, 2 * 60 * 1000); // 2 minutes
+          }
         }
 
-        // Load children
-        const { data: childrenData } = await supabase
-          .from('children')
-          .select('id, nickname')
-          .eq('family_id', familyData.id);
+        // Load children (cached for 5 minutes)
+        const childrenCacheKey = `children_${familyData.id}`;
+        const cachedChildren = cache.get<Child[]>(childrenCacheKey);
+        
+        if (cachedChildren) {
+          setChildren(cachedChildren);
+        } else {
+          const { data: childrenData } = await supabase
+            .from('children')
+            .select('id, nickname')
+            .eq('family_id', familyData.id);
 
-        if (childrenData) {
-          setChildren(childrenData);
+          if (childrenData) {
+            setChildren(childrenData);
+            cache.set(childrenCacheKey, childrenData, 5 * 60 * 1000); // 5 minutes
+          }
         }
       }
     } catch (error) {
@@ -111,6 +138,13 @@ export default function ParentChores() {
   };
 
   const loadTemplates = async () => {
+    // Check cache first (1 hour TTL)
+    const cached = cache.get<ChoreTemplate[]>('chore_templates');
+    if (cached) {
+      setTemplates(cached);
+      return;
+    }
+
     try {
       const { data } = await supabase
         .from('chore_templates')
@@ -119,6 +153,8 @@ export default function ParentChores() {
 
       if (data) {
         setTemplates(data as ChoreTemplate[]);
+        // Cache for 1 hour
+        cache.set('chore_templates', data, 60 * 60 * 1000);
       }
     } catch (error) {
       console.error('Error loading templates:', error);
@@ -243,6 +279,20 @@ export default function ParentChores() {
       setNewChoreIcon('chore');
       setNewChoreDueDate('');
       setShowAddForm(false);
+      
+      // Invalidate chores cache
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: familyData } = await supabase
+          .from('families')
+          .select('*')
+          .eq('parent_id', session.user.id)
+          .single();
+        if (familyData) {
+          cache.invalidate(`chores_${familyData.id}`);
+        }
+      }
+      
       loadData();
       
       if (children.length > 0) {
@@ -340,6 +390,19 @@ export default function ParentChores() {
 
       if (error) throw error;
 
+      // Invalidate chores cache
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: familyData } = await supabase
+          .from('families')
+          .select('*')
+          .eq('parent_id', session.user.id)
+          .single();
+        if (familyData) {
+          cache.invalidate(`chores_${familyData.id}`);
+        }
+      }
+
       alert('Chore deleted.');
       loadData();
     } catch (error: any) {
@@ -358,7 +421,7 @@ export default function ParentChores() {
             <div className="flex gap-2">
               <button
                 onClick={() => setShowTemplates(!showTemplates)}
-                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                className="px-4 py-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 transition-colors"
               >
                 📋 Templates
               </button>
@@ -367,7 +430,7 @@ export default function ParentChores() {
                   setShowAddForm(!showAddForm);
                   setShowTemplates(false);
                 }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                className="px-4 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors"
               >
                 {showAddForm ? 'Cancel' : '+ Add'}
               </button>
@@ -551,7 +614,7 @@ export default function ParentChores() {
                   <button
                     type="button"
                     onClick={handleAddStep}
-                    className="px-3 py-1 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                    className="px-3 py-1 text-sm bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition-colors"
                   >
                     + Add Step
                   </button>
@@ -586,7 +649,7 @@ export default function ParentChores() {
               <button
                 onClick={handleAddChore}
                 disabled={loading}
-                className="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-2 bg-lime-400 text-white rounded-lg hover:bg-lime-500 transition-colors disabled:opacity-50"
               >
                 Add
               </button>
@@ -653,7 +716,7 @@ export default function ParentChores() {
                 <button
                   onClick={() => handleAssignToAll(chore.id)}
                   disabled={loading || children.length === 0}
-                  className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  className="w-full px-4 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors disabled:opacity-50"
                 >
                   {assignButtonLabel}
                 </button>
@@ -713,7 +776,7 @@ export default function ParentChores() {
                       setSelectedChoreForAssign(null);
                       setAssignDueDate('');
                     }}
-                    className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className="flex-1 px-4 py-2 bg-teal-400 text-white rounded-lg hover:bg-teal-500 transition-colors"
                   >
                     Assign
                   </button>
