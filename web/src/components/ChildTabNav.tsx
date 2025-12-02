@@ -5,10 +5,10 @@ export default function ChildTabNav() {
   const location = useLocation();
 
   const tabs = [
-    { path: '/child/today', label: 'Dashboard', iconName: 'home', emoji: '🏠' },
-    { path: '/child/upload', label: 'Upload', iconName: 'camera', emoji: '📸' },
-    { path: '/child/rewards', label: 'Rewards', iconName: 'gift', emoji: '🎁' },
-    { path: '/child/profile', label: 'Settings', iconName: 'profile', emoji: '👤' },
+    { path: '/child/today', label: 'Dashboard', iconName: 'home' },
+    { path: '/child/upload', label: 'Upload', iconName: 'camera' },
+    { path: '/child/rewards', label: 'Rewards', iconName: 'gift' },
+    { path: '/child/profile', label: 'Settings', iconName: 'profile' },
   ];
 
   return (
@@ -32,11 +32,7 @@ export default function ChildTabNav() {
               }`}
             >
               <div className="mb-1">
-                {tab.iconName ? (
-                  <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
-                ) : (
-                  <span className="text-lg md:text-xl">{tab.emoji}</span>
-                )}
+                <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
               </div>
               <span className="text-[10px] md:text-xs font-medium">{tab.label}</span>
             </Link>

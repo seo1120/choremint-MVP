@@ -1,4 +1,4 @@
-// 아이콘 컴포넌트 - SVG 이미지로 이모지 대체
+// 아이콘 컴포넌트 - SVG 이미지 로드 및 표시
 import { useState, useEffect } from 'react';
 
 interface IconProps {
@@ -19,29 +19,6 @@ export default function Icon({ name, className = '', size = 24, active = false }
     : `/icons/${name}.svg`;
   const [svgContent, setSvgContent] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  
-  const emojiMap: Record<string, string> = {
-    'home': '🏠',
-    'chore': '🧹',
-    'check': '✅',
-    'gift': '🎁',
-    'profile': '👤',
-    'checklist': '📋',
-    'camera': '📸',
-    'star': '⭐',
-    'wave': '👋',
-    'celebration': '🎉',
-    'trash': '🗑️',
-    'bed': '🛏️',
-    'dog': '🐕',
-    'broom': '🧹',
-    'trash-can': '🗑️',
-    'dining': '🍽️',
-    'plant': '🌱',
-    'shoe': '👟',
-    'template': '📋',
-    'warning': '⚠️',
-  };
 
   // SVG 파일 로드
   useEffect(() => {
@@ -86,13 +63,13 @@ export default function Icon({ name, className = '', size = 24, active = false }
           justifyContent: 'center'
         }}
       >
-        <span className="text-xl">{emojiMap[name] || '❓'}</span>
+        <div className="w-full h-full bg-gray-200 rounded animate-pulse"></div>
       </div>
     );
   }
 
   if (!svgContent) {
-    // SVG 로드 실패 시 이모지 폴백
+    // SVG 로드 실패 시 빈 div 반환
     return (
       <div 
         className={className}
@@ -104,7 +81,7 @@ export default function Icon({ name, className = '', size = 24, active = false }
           justifyContent: 'center'
         }}
       >
-        <span className="text-xl">{emojiMap[name] || '❓'}</span>
+        <div className="w-full h-full bg-gray-200 rounded"></div>
       </div>
     );
   }
@@ -126,28 +103,4 @@ export default function Icon({ name, className = '', size = 24, active = false }
     />
   );
 }
-
-// 아이콘 이름 상수 (타입 안전성)
-export const IconNames = {
-  HOME: 'home',
-  CHORE: 'chore',
-  CHECK: 'check',
-  GIFT: 'gift',
-  PROFILE: 'profile',
-  CHECKLIST: 'checklist',
-  CAMERA: 'camera',
-  STAR: 'star',
-  WAVE: 'wave',
-  CELEBRATION: 'celebration',
-  TRASH: 'trash',
-  BED: 'bed',
-  DOG: 'dog',
-  BROOM: 'broom',
-  TRASH_CAN: 'trash-can',
-  DINING: 'dining',
-  PLANT: 'plant',
-  SHOE: 'shoe',
-  TEMPLATE: 'template',
-  WARNING: 'warning',
-} as const;
 

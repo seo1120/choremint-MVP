@@ -5,11 +5,11 @@ export default function ParentTabNav() {
   const location = useLocation();
 
   const tabs = [
-    { path: '/parent/home', label: 'Dashboard', iconName: 'home', emoji: '🏠' },
-    { path: '/parent/chores', label: 'Chores', iconName: 'chore', emoji: '🧹' },
-    { path: '/parent/approvals', label: 'Pending', iconName: 'check', emoji: '✅' },
-    { path: '/parent/rewards', label: 'Rewards', iconName: 'gift', emoji: '🎁' },
-    { path: '/parent/profile', label: 'Settings', iconName: 'profile', emoji: '👤' },
+    { path: '/parent/home', label: 'Dashboard', iconName: 'home' },
+    { path: '/parent/chores', label: 'Chores', iconName: 'chore' },
+    { path: '/parent/approvals', label: 'Pending', iconName: 'check' },
+    { path: '/parent/rewards', label: 'Rewards', iconName: 'gift' },
+    { path: '/parent/profile', label: 'Settings', iconName: 'profile' },
   ];
 
   return (
@@ -33,11 +33,7 @@ export default function ParentTabNav() {
               }`}
             >
               <div className="mb-1">
-                {tab.iconName ? (
-                  <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
-                ) : (
-                  <span className="text-lg md:text-xl">{tab.emoji}</span>
-                )}
+                <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
               </div>
               <span className="text-[10px] md:text-xs font-medium">{tab.label}</span>
             </Link>
