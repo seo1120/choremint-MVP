@@ -453,27 +453,27 @@ export default function ParentChores() {
               </div>
             ) : (
               chores.map((chore) => (
-                <div key={chore.id} className="bg-gray-50 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 overflow-hidden">
+                <div key={chore.id} className="bg-gray-50 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3 overflow-hidden">
                   <div 
-                    className="flex-1 cursor-pointer flex items-center gap-3 sm:gap-4 min-w-0"
+                    className="flex-1 cursor-pointer flex items-center gap-2 sm:gap-4 min-w-0"
                     onClick={() => setSelectedChoreForDetail(chore)}
                   >
                     <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-100 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
                       <Icon name={chore.icon || 'chore'} size={24} className="sm:w-7 sm:h-7" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">{chore.title}</h3>
-                      <p className="text-sm sm:text-base text-gray-600 flex items-center gap-1 mt-0.5">
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-800 whitespace-nowrap overflow-hidden text-ellipsis">{chore.title}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 flex items-center gap-1 whitespace-nowrap flex-shrink-0">
                         <Icon name="star" size={16} className="sm:w-4 sm:h-4" />
-                        <span className="whitespace-nowrap">{chore.points} pts</span>
+                        <span>{chore.points} pts</span>
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleAssignChore(chore.id)}
                       disabled={loading || children.length === 0}
-                      className="px-3 sm:px-4 py-2 bg-[#5CE1C6] text-white rounded-full hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 font-semibold text-sm sm:text-base whitespace-nowrap min-h-[44px]"
+                      className="px-2 sm:px-4 py-2 bg-[#5CE1C6] text-white rounded-full hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 font-semibold text-xs sm:text-base whitespace-nowrap min-h-[44px]"
                     >
                       + Assign
                     </button>
@@ -488,18 +488,18 @@ export default function ParentChores() {
                         setShowTemplates(false);
                         setShowFABMenu(false);
                       }}
-                      className="w-11 h-11 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 min-h-[44px]"
+                      className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 min-h-[44px]"
                       title="Edit"
                     >
-                      <Icon name="pencil" size={20} className="sm:w-5 sm:h-5" />
+                      <Icon name="pencil" size={18} className="sm:w-5 sm:h-5" />
                     </button>
                     <button
                       onClick={() => handleDeleteChore(chore.id)}
                       disabled={loading}
-                      className="w-11 h-11 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center flex-shrink-0 min-h-[44px]"
+                      className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center flex-shrink-0 min-h-[44px]"
                       title="Delete"
                     >
-                      <Icon name="trash" size={20} className="sm:w-5 sm:h-5" />
+                      <Icon name="trash" size={18} className="sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </div>
@@ -540,7 +540,7 @@ export default function ParentChores() {
         {/* FAB Button */}
         <button
           onClick={() => setShowFABMenu(!showFABMenu)}
-          className="w-14 h-14 sm:w-16 sm:h-16 bg-[#5CE1C6] text-white rounded-full shadow-lg hover:bg-[#4BC9B0] transition-all flex items-center justify-center text-2xl sm:text-3xl font-bold"
+          className="w-14 h-14 sm:w-16 sm:h-16 bg-[#5CE1C6] text-white rounded-full shadow-lg hover:bg-[#4BC9B0] transition-all flex items-center justify-center text-2xl sm:text-3xl font-bold aspect-square"
         >
           {showFABMenu ? '×' : '+'}
         </button>
@@ -600,9 +600,9 @@ export default function ParentChores() {
 
       {/* Custom Form - 전체 화면 모달 */}
       {showCustomForm && (
-        <div className="fixed inset-0 bg-white z-50 overflow-y-auto overscroll-contain">
-          <div className="max-w-2xl mx-auto p-4 sm:p-6 pb-20">
-            <div className="flex justify-between items-center mb-6 sm:mb-8 pt-4 sm:pt-8 gap-2">
+        <div className="fixed inset-0 bg-white z-50 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="max-w-2xl mx-auto px-5 sm:px-6 py-5 sm:py-6 pb-24">
+            <div className="flex justify-between items-center mb-6 sm:mb-8 pt-2 sm:pt-4 gap-2">
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0"></div>
               <h1 className="text-lg sm:text-2xl font-bold text-gray-800 text-center flex-1 whitespace-nowrap">{editingChoreId ? 'Edit Chore' : 'Create Custom'}</h1>
               <button
