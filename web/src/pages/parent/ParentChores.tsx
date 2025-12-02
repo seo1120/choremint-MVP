@@ -510,7 +510,7 @@ export default function ParentChores() {
       </div>
 
       {/* FAB (Floating Action Button) - 오른쪽 하단 */}
-      <div className="fixed bottom-28 sm:bottom-24 right-6 sm:right-8 z-50">
+      <div className="fixed bottom-32 sm:bottom-28 right-6 sm:right-8 z-50">
         {/* FAB Menu - 위아래 배치, 텍스트는 한 줄로 (absolute positioning으로 플러스 버튼 위치에 영향 없음) */}
         {showFABMenu && (
           <div className="absolute bottom-full right-0 mb-3 flex flex-col gap-3">
