@@ -54,6 +54,7 @@ export default function ParentChores() {
   const [loading, setLoading] = useState(false);
   const [selectedChoreForDetail, setSelectedChoreForDetail] = useState<Chore | null>(null);
   const [selectedTemplateForDetail, setSelectedTemplateForDetail] = useState<ChoreTemplate | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -438,6 +439,11 @@ export default function ParentChores() {
     }
   };
 
+  // 검색어로 필터링된 집안일 목록
+  const filteredChores = chores.filter(chore =>
+    chore.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-3 sm:p-4">
@@ -445,14 +451,43 @@ export default function ParentChores() {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-4 sm:mb-6 pt-6 sm:pt-8">Chores</h1>
         
         {/* Chores List - 기본 화면에 표시 */}
-        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        <div className="bg-white rounded-2xl p-4 sm:p-6">
+          {/* Search Bar */}
+          <div className="mb-4 sm:mb-6">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search chores..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 sm:px-5 py-3 sm:py-4 pl-10 sm:pl-12 bg-gray-50 border-2 border-gray-200 rounded-4xl focus:outline-none focus:border-[#5CE1C6] focus:bg-white transition-all text-sm sm:text-base min-h-[44px]"
+              />
+              <div className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
           <div className="space-y-3">
-            {chores.length === 0 ? (
+            {filteredChores.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-gray-500">No chores registered.</p>
+                <p className="text-gray-500">
+                  {searchQuery ? `No chores found for "${searchQuery}"` : 'No chores registered.'}
+                </p>
               </div>
             ) : (
-              chores.map((chore) => (
+              filteredChores.map((chore) => (
                 <div key={chore.id} className="bg-gray-50 rounded-xl p-3 sm:p-4 flex items-center gap-2 sm:gap-3 overflow-hidden">
                   <div 
                     className="flex-1 cursor-pointer flex items-center gap-2 sm:gap-4 min-w-0"

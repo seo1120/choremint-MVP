@@ -550,7 +550,7 @@ export default function ParentHome() {
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-3 sm:p-4">
         {/* Children Avatar Tabs */}
         {children.length > 0 && (
           <div className="mb-4 flex gap-3 overflow-x-auto pb-2">
@@ -585,12 +585,12 @@ export default function ParentHome() {
         )}
 
         {/* Header */}
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-4 sm:mb-6 pt-6 sm:pt-8">
+          {family?.family_name ? `${family.family_name}'s Home` : 'Home'}
+        </h1>
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {family?.family_name ? `${family.family_name}'s Home` : 'Home'}
-              </h1>
               <p className="text-gray-600 text-sm mt-1">Family Code: 
                 <span className="font-mono font-bold ml-2">{family?.family_code || 'Loading...'}</span>
               </p>
