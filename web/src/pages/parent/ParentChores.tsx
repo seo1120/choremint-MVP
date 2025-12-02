@@ -742,9 +742,9 @@ export default function ParentChores() {
         {/* Assign Chore Modal with Child Selection */}
         {showChildSelection && selectedChoreForAssign && (
           <div className="fixed inset-0 backdrop-blur-md bg-black/20 flex items-center justify-center z-50 p-4 pointer-events-none">
-            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-5 sm:p-6 max-h-[80vh] overflow-y-auto pointer-events-auto my-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 sm:p-6 max-h-[80vh] overflow-y-auto pointer-events-auto my-2 mx-2" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="flex justify-between items-start mb-5">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex-1">Assign Chore</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex-1 pr-2">Assign Chore</h3>
                 <button
                   onClick={() => {
                     setSelectedChoreForAssign(null);
@@ -752,13 +752,13 @@ export default function ParentChores() {
                     setAssignDueDate('');
                     setShowChildSelection(false);
                   }}
-                  className="text-gray-500 hover:text-gray-700 text-2xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center min-h-[44px] flex-shrink-0 ml-2"
+                  className="text-gray-500 hover:text-gray-700 text-2xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center min-h-[44px] flex-shrink-0"
                 >
                   ×
                 </button>
               </div>
 
-              <div className="space-y-5 pb-4">
+              <div className="space-y-5 pb-2">
                 <div>
                   <label className="block text-base font-semibold text-gray-700 mb-2">
                     Due Date
