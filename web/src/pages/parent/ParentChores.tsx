@@ -453,27 +453,27 @@ export default function ParentChores() {
               </div>
             ) : (
               chores.map((chore) => (
-                <div key={chore.id} className="bg-gray-50 rounded-xl p-2 sm:p-4 flex items-center justify-between gap-2 overflow-hidden">
+                <div key={chore.id} className="bg-gray-50 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 overflow-hidden">
                   <div 
-                    className="flex-1 cursor-pointer flex items-center gap-2 sm:gap-4 min-w-0"
+                    className="flex-1 cursor-pointer flex items-center gap-3 sm:gap-4 min-w-0"
                     onClick={() => setSelectedChoreForDetail(chore)}
                   >
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-orange-100 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
-                      <Icon name={chore.icon || 'chore'} size={16} className="sm:w-6 sm:h-6" />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-orange-100 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <Icon name={chore.icon || 'chore'} size={24} className="sm:w-7 sm:h-7" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-lg font-bold text-gray-800 truncate">{chore.title}</h3>
-                      <p className="text-xs sm:text-base text-gray-600 flex items-center gap-1">
-                        <Icon name="star" size={12} className="sm:w-4 sm:h-4" />
+                      <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">{chore.title}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 flex items-center gap-1 mt-0.5">
+                        <Icon name="star" size={16} className="sm:w-4 sm:h-4" />
                         <span className="whitespace-nowrap">{chore.points} pts</span>
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleAssignChore(chore.id)}
                       disabled={loading || children.length === 0}
-                      className="px-2 sm:px-4 py-1.5 sm:py-2 bg-[#5CE1C6] text-white rounded-full hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 font-semibold text-xs sm:text-base whitespace-nowrap min-h-[36px] sm:min-h-[44px]"
+                      className="px-3 sm:px-4 py-2 bg-[#5CE1C6] text-white rounded-full hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 font-semibold text-sm sm:text-base whitespace-nowrap min-h-[44px]"
                     >
                       + Assign
                     </button>
@@ -488,18 +488,18 @@ export default function ParentChores() {
                         setShowTemplates(false);
                         setShowFABMenu(false);
                       }}
-                      className="w-9 h-9 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 min-h-[36px] sm:min-h-[44px]"
+                      className="w-11 h-11 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center flex-shrink-0 min-h-[44px]"
                       title="Edit"
                     >
-                      <Icon name="pencil" size={16} className="sm:w-5 sm:h-5" />
+                      <Icon name="pencil" size={20} className="sm:w-5 sm:h-5" />
                     </button>
                     <button
                       onClick={() => handleDeleteChore(chore.id)}
                       disabled={loading}
-                      className="w-9 h-9 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center flex-shrink-0 min-h-[36px] sm:min-h-[44px]"
+                      className="w-11 h-11 sm:w-12 sm:h-12 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center flex-shrink-0 min-h-[44px]"
                       title="Delete"
                     >
-                      <Icon name="trash" size={16} className="sm:w-5 sm:h-5" />
+                      <Icon name="trash" size={20} className="sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </div>
@@ -510,7 +510,7 @@ export default function ParentChores() {
       </div>
 
       {/* FAB (Floating Action Button) - 오른쪽 하단 */}
-      <div className="fixed bottom-24 sm:bottom-24 right-4 z-50">
+      <div className="fixed bottom-28 sm:bottom-24 right-4 z-50">
         {/* FAB Menu - 위아래 배치, 텍스트는 한 줄로 (absolute positioning으로 플러스 버튼 위치에 영향 없음) */}
         {showFABMenu && (
           <div className="absolute bottom-full right-0 mb-3 flex flex-col gap-3">
@@ -746,9 +746,9 @@ export default function ParentChores() {
         {/* Assign Chore Modal with Child Selection */}
         {showChildSelection && selectedChoreForAssign && (
           <div className="fixed inset-0 backdrop-blur-md bg-black/20 flex items-center justify-center z-50 p-4 pointer-events-none">
-            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-4 sm:p-6 max-h-[85vh] overflow-y-auto pointer-events-auto">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Assign Chore</h3>
+            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-5 sm:p-6 max-h-[90vh] overflow-y-auto pointer-events-auto my-4">
+              <div className="flex justify-between items-start mb-5">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex-1">Assign Chore</h3>
                 <button
                   onClick={() => {
                     setSelectedChoreForAssign(null);
@@ -756,15 +756,15 @@ export default function ParentChores() {
                     setAssignDueDate('');
                     setShowChildSelection(false);
                   }}
-                  className="text-gray-500 hover:text-gray-700 text-xl sm:text-2xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center min-h-[44px]"
+                  className="text-gray-500 hover:text-gray-700 text-2xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center min-h-[44px] flex-shrink-0 ml-2"
                 >
                   ×
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-base font-semibold text-gray-700 mb-2">
                     Due Date
                   </label>
                   <input
@@ -777,28 +777,28 @@ export default function ParentChores() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-base font-semibold text-gray-700 mb-3">
                     Select Children
                   </label>
                   <div className="space-y-2">
                     {children.map((child) => (
                       <label
                         key={child.id}
-                        className="flex items-center gap-3 p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors min-h-[44px]"
+                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors min-h-[44px]"
                       >
                         <input
                           type="checkbox"
                           checked={selectedChildren.includes(child.id)}
                           onChange={() => handleToggleChildSelection(child.id)}
-                          className="w-5 h-5 sm:w-6 sm:h-6 accent-[#5CE1C6] rounded focus:ring-2 focus:ring-[#5CE1C6] flex-shrink-0"
+                          className="w-6 h-6 accent-[#5CE1C6] rounded focus:ring-2 focus:ring-[#5CE1C6] flex-shrink-0"
                         />
-                        <span className="text-sm sm:text-base text-gray-800 font-medium">{child.nickname}</span>
+                        <span className="text-base text-gray-800 font-medium">{child.nickname}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-3">
                   <button
                     onClick={() => {
                       setSelectedChoreForAssign(null);
@@ -806,14 +806,14 @@ export default function ParentChores() {
                       setAssignDueDate('');
                       setShowChildSelection(false);
                     }}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base font-semibold min-h-[44px]"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-base font-semibold min-h-[44px]"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleConfirmAssignment}
                     disabled={loading || selectedChildren.length === 0}
-                    className="flex-1 px-4 py-3 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 text-sm sm:text-base font-semibold min-h-[44px]"
+                    className="flex-1 px-4 py-3 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors disabled:opacity-50 text-base font-semibold min-h-[44px]"
                   >
                     {loading ? 'Assigning...' : 'Assign'}
                   </button>
