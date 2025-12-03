@@ -32,7 +32,7 @@ export default function ChildTabNav() {
               }`}
             >
               <div className="mb-1">
-                <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
+                  <Icon name={tab.iconName} size={20} className="md:w-6 md:h-6" active={isActive} />
               </div>
               <span className="text-[10px] md:text-xs font-medium">{tab.label}</span>
             </Link>

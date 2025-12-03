@@ -709,7 +709,7 @@ export default function ParentHome() {
 
       <div className="max-w-4xl mx-auto p-3 sm:p-4">
         {/* Welcome Header */}
-        <div className="pt-6 sm:pt-8 mb-4">
+        <div className="px-4 pt-6 sm:pt-8 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
             Welcome home, {parentName || 'Parent'}!
           </h1>
@@ -719,7 +719,7 @@ export default function ParentHome() {
         </div>
 
         {/* Children Avatar Tabs */}
-        <div className="mb-4 flex gap-3 overflow-x-auto pb-2">
+        <div className="mb-6 flex gap-3 overflow-x-auto pb-2 px-4">
           {children.map((child) => (
             <div
               key={child.id}
@@ -792,16 +792,16 @@ export default function ParentHome() {
         </div>
 
         {/* Summary Cards */}
-        <div className="flex gap-3 mb-4 justify-center">
+        <div className="grid grid-cols-2 gap-3 mb-4 max-w-md mx-auto">
           {/* Pending Approvals */}
           <div 
             onClick={() => navigate('/parent/approvals')}
-            className="w-[calc(50%-6px)] max-w-[180px] bg-gradient-to-br from-[#5CE1C6] to-[#4BC9B0] rounded-2xl p-3 sm:p-4 cursor-pointer transition-opacity hover:opacity-90"
+            className="bg-gradient-to-br from-[#5CE1C6] to-[#4BC9B0] rounded-2xl p-5 cursor-pointer transition-opacity hover:opacity-90"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-xs sm:text-sm mb-1 opacity-90">Pending</p>
-                <p className="text-xl sm:text-2xl font-bold text-white">{pendingCount}</p>
+                <p className="text-white text-sm mb-1 opacity-90">Pending</p>
+                <p className="text-3xl font-bold text-white">{pendingCount}</p>
               </div>
             </div>
           </div>
@@ -809,19 +809,19 @@ export default function ParentHome() {
           {/* Assign Chore */}
           <div 
             onClick={() => navigate('/parent/chores')}
-            className="w-[calc(50%-6px)] max-w-[180px] bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl p-3 sm:p-4 cursor-pointer transition-opacity hover:opacity-90"
+            className="bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl p-5 cursor-pointer transition-opacity hover:opacity-90"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-xs sm:text-sm mb-1 opacity-90">Assign Chore</p>
-                <p className="text-base sm:text-lg font-bold text-white">→</p>
+                <p className="text-white text-sm mb-1 opacity-90">Assign Chore</p>
+                <p className="text-lg font-bold text-white">→</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Children Progress */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6">
+        <div className="bg-white rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Children Progress</h2>
           {children.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No children registered.</p>

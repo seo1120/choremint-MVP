@@ -194,7 +194,7 @@ export default function ParentChores() {
       if (choreError) throw choreError;
 
       loadData();
-      setShowTemplates(false);
+    setShowTemplates(false);
       setShowCustomForm(false);
       setShowFABMenu(false);
       alert('Chore added successfully! You can now assign it to children.');
@@ -268,30 +268,30 @@ export default function ParentChores() {
         alert('Chore updated successfully!');
       } else {
         // Create new chore
-        const { data: familyData } = await supabase
-          .from('families')
-          .select('*')
-          .eq('parent_id', session.user.id)
-          .single();
+      const { data: familyData } = await supabase
+        .from('families')
+        .select('*')
+        .eq('parent_id', session.user.id)
+        .single();
 
-        if (!familyData) throw new Error('Family information not found.');
+      if (!familyData) throw new Error('Family information not found.');
 
         const pointsValue = newChorePoints === '' ? 1 : (typeof newChorePoints === 'number' ? newChorePoints : 1);
         const { data: _newChore, error: choreError } = await supabase
-          .from('chores')
-          .insert({
-            family_id: familyData.id,
-            title: newChoreTitle,
+        .from('chores')
+        .insert({
+          family_id: familyData.id,
+          title: newChoreTitle,
             points: pointsValue,
-            photo_required: true,
-            active: true,
-            steps: newChoreSteps.length > 0 ? newChoreSteps : null,
-            icon: newChoreIcon,
-          })
-          .select()
-          .single();
+          photo_required: true,
+          active: true,
+          steps: newChoreSteps.length > 0 ? newChoreSteps : null,
+          icon: newChoreIcon,
+        })
+        .select()
+        .single();
 
-        if (choreError) throw choreError;
+      if (choreError) throw choreError;
 
         alert('Chore added successfully! You can now assign it to children.');
       }
@@ -319,11 +319,11 @@ export default function ParentChores() {
       return;
     }
 
-    setSelectedChoreForAssign(choreId);
+      setSelectedChoreForAssign(choreId);
     setSelectedChildren([]);
-    // Set default to today
-    const today = new Date().toISOString().split('T')[0];
-    setAssignDueDate(today);
+      // Set default to today
+      const today = new Date().toISOString().split('T')[0];
+      setAssignDueDate(today);
     setShowChildSelection(true);
   };
 
@@ -375,7 +375,7 @@ export default function ParentChores() {
       
       // 선택한 자녀들에게만 푸시 알림 전송
       if (chore) {
-        await Promise.all(
+          await Promise.all(
           selectedChildren.map(childId => {
             const child = children.find(c => c.id === childId);
             if (child) {
@@ -388,8 +388,8 @@ export default function ParentChores() {
             }
             return Promise.resolve();
           })
-        );
-      }
+          );
+        }
 
       const selectedNames = selectedChildren
         .map(id => children.find(c => c.id === id)?.nickname)
@@ -404,8 +404,8 @@ export default function ParentChores() {
       setAssignDueDate('');
       setShowChildSelection(false);
       loadData();
-    } catch (error: any) {
-      alert(error.message || 'Error occurred while assigning.');
+      } catch (error: any) {
+        alert(error.message || 'Error occurred while assigning.');
     } finally {
       setLoading(false);
     }
@@ -573,12 +573,12 @@ export default function ParentChores() {
         )}
         
         {/* FAB Button */}
-        <button
+              <button
           onClick={() => setShowFABMenu(!showFABMenu)}
           className="w-14 h-14 sm:w-16 sm:h-16 bg-[#5CE1C6] text-white rounded-full shadow-lg hover:bg-[#4BC9B0] transition-all flex items-center justify-center text-2xl sm:text-3xl font-bold aspect-square"
-        >
+              >
           {showFABMenu ? '×' : '+'}
-        </button>
+              </button>
       </div>
 
       {/* Template Selection - 전체 화면 모달 */}
@@ -599,21 +599,21 @@ export default function ParentChores() {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 pb-4">
-              {templates.map((template) => (
+                {templates.map((template) => (
                 <div
-                  key={template.id}
+                    key={template.id}
                   className="bg-white rounded-xl shadow-md p-3 sm:p-4 hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => setSelectedTemplateForDetail(template)}
-                >
+                  >
                   {/* Icon */}
                   <div className="w-full h-16 sm:h-20 bg-orange-50 rounded-lg flex items-center justify-center mb-2">
                     <Icon name={getIconName(template.icon)} size={24} className="sm:w-8 sm:h-8" />
-                  </div>
-                  
-                  {/* Title */}
+                    </div>
+                    
+                    {/* Title */}
                   <h4 className="text-xs sm:text-sm font-bold text-gray-800 mb-2 text-center truncate">
                     {getEnglishTitle(template.title)}
-                  </h4>
+                    </h4>
                   
                   {/* Add Button */}
                   <button
@@ -626,9 +626,9 @@ export default function ParentChores() {
                   >
                     Add
                   </button>
-                </div>
-              ))}
-            </div>
+                      </div>
+                    ))}
+                  </div>
           </div>
         </div>
       )}
@@ -640,29 +640,29 @@ export default function ParentChores() {
             <div className="flex justify-between items-center mb-6 sm:mb-8 pt-2 sm:pt-4 gap-2">
               <div className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0"></div>
               <h1 className="text-lg sm:text-2xl font-bold text-gray-800 text-center flex-1 whitespace-nowrap">{editingChoreId ? 'Edit Chore' : 'Create Custom'}</h1>
-              <button
-                onClick={() => {
+                  <button
+                    onClick={() => {
                   setShowCustomForm(false);
                   setShowFABMenu(false);
                   setEditingChoreId(null);
-                }}
+                    }}
                 className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors text-xl sm:text-2xl min-h-[44px] flex-shrink-0"
-              >
+                  >
                 ×
-              </button>
+                  </button>
             </div>
             
             <div className="space-y-4 sm:space-y-6">
               {/* Chore Title */}
               <div>
                 <label className="block text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">Chore Title</label>
-                <input
-                  type="text"
+              <input
+                type="text"
                   placeholder="e.g., Water the plants"
-                  value={newChoreTitle}
-                  onChange={(e) => setNewChoreTitle(e.target.value)}
+                value={newChoreTitle}
+                onChange={(e) => setNewChoreTitle(e.target.value)}
                   className="w-full px-4 sm:px-5 py-3 sm:py-4 bg-gray-50 border-2 border-gray-200 rounded-3xl focus:outline-none focus:border-[#5CE1C6] focus:bg-white transition-all text-base min-h-[44px]"
-                />
+              />
               </div>
 
               {/* Points */}
@@ -988,7 +988,7 @@ export default function ParentChores() {
               </button>
             </div>
           </div>
-        </div>
+      </div>
       )}
 
       <ParentTabNav />
