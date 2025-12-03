@@ -719,7 +719,7 @@ export default function ParentHome() {
         </div>
 
         {/* Children Avatar Tabs */}
-        <div className="mb-6 flex gap-3 overflow-x-auto pb-2 px-4">
+        <div className="mb-2 flex gap-2 overflow-x-auto pb-2 px-4">
           {children.map((child) => (
             <div
               key={child.id}
@@ -792,16 +792,16 @@ export default function ParentHome() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-3 mb-4 max-w-md mx-auto">
+        <div className="grid grid-cols-2 gap-3 mb-4 max-w-md mx-auto px-4">
           {/* Pending Approvals */}
           <div 
             onClick={() => navigate('/parent/approvals')}
-            className="bg-gradient-to-br from-[#5CE1C6] to-[#4BC9B0] rounded-2xl p-5 cursor-pointer transition-opacity hover:opacity-90"
+            className="bg-gradient-to-br from-[#5CE1C6] to-[#4BC9B0] rounded-2xl px-4 py-3 cursor-pointer transition-opacity hover:opacity-90"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-sm mb-1 opacity-90">Pending</p>
-                <p className="text-3xl font-bold text-white">{pendingCount}</p>
+                <p className="text-white text-sm mb-0.5 opacity-90">Pending</p>
+                <p className="text-2xl font-bold text-white">{pendingCount}</p>
               </div>
             </div>
           </div>
@@ -809,11 +809,11 @@ export default function ParentHome() {
           {/* Assign Chore */}
           <div 
             onClick={() => navigate('/parent/chores')}
-            className="bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl p-5 cursor-pointer transition-opacity hover:opacity-90"
+            className="bg-gradient-to-br from-[#FF7F7F] to-[#FFB6C1] rounded-2xl px-4 py-3 cursor-pointer transition-opacity hover:opacity-90"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white text-sm mb-1 opacity-90">Assign Chore</p>
+                <p className="text-white text-sm mb-0.5 opacity-90">Assign Chore</p>
                 <p className="text-lg font-bold text-white">→</p>
               </div>
             </div>
