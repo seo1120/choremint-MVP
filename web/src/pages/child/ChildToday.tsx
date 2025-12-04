@@ -37,7 +37,6 @@ export default function ChildToday() {
   const [childSession, setChildSession] = useState<ChildSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [level, setLevel] = useState(1);
   const [characterMood, setCharacterMood] = useState<'happy' | 'normal' | 'sleepy'>('happy');
   const [selectedAssignment, setSelectedAssignment] = useState<ChoreAssignment | null>(null);
   const [showChoreDetail, setShowChoreDetail] = useState(false);
@@ -297,10 +296,6 @@ export default function ChildToday() {
   };
 
   const calculateLevel = (points: number, goalPoints: number | null) => {
-    // 레벨 계산: 100포인트마다 레벨 1 증가
-    const newLevel = Math.floor(points / 100) + 1;
-    setLevel(newLevel);
-
     // 캐릭터 기분을 목표치 대비 퍼센트로 결정
     if (goalPoints && goalPoints > 0) {
       const progressPercent = (points / goalPoints) * 100;
@@ -398,10 +393,6 @@ export default function ChildToday() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-lg font-bold text-gray-800 mb-1">My Character</h2>
-              <div className="flex items-center gap-2">
-                <Icon name="star" size={16} active={true} />
-                <span className="text-sm font-semibold text-gray-700">Level {level}</span>
-              </div>
             </div>
             {/* Character SVG (3D-like appearance) */}
             <div className="relative">
@@ -502,23 +493,6 @@ export default function ChildToday() {
                       strokeLinecap="round"
                     />
                   )}
-                  
-                  {/* Decorative elements based on level */}
-                  {level >= 3 && (
-                    <circle
-                      cx="100"
-                      cy="80"
-                      r="15"
-                      fill="#FFD700"
-                      opacity="0.6"
-                    />
-                  )}
-                  {level >= 5 && (
-                    <>
-                      <circle cx="70" cy="130" r="8" fill="#FF69B4" opacity="0.7" />
-                      <circle cx="130" cy="130" r="8" fill="#FF69B4" opacity="0.7" />
-                    </>
-                  )}
                 </svg>
               </div>
             </div>
@@ -604,8 +578,15 @@ export default function ChildToday() {
 
         {/* Chore Detail Modal */}
         {showChoreDetail && selectedAssignment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+          <div 
+            className="fixed inset-0 backdrop-blur-md bg-black/20 flex items-center justify-center z-50 p-4 pointer-events-none"
+            onClick={() => setShowChoreDetail(false)}
+          >
+            <div 
+              className="bg-white rounded-3xl shadow-xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto pointer-events-auto my-2 mx-3" 
+              style={{ WebkitOverflowScrolling: 'touch' }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-800 mb-2">
@@ -649,9 +630,10 @@ export default function ChildToday() {
                   setShowChoreDetail(false);
                   handleUpload(selectedAssignment.chore.id);
                 }}
-                className="w-full px-4 py-3 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-lg hover:from-orange-500 hover:to-pink-500 transition-colors font-bold"
+                className="w-full px-4 py-3 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors font-bold flex items-center justify-center gap-2"
               >
-                📸 Upload Photo
+                <Icon name="camera" size={20} className="[&_svg_path]:fill-white [&_svg_circle]:fill-white [&_svg_rect]:fill-white [&_svg_polygon]:fill-white [&_svg_polyline]:fill-white" />
+                Upload Photo
               </button>
             </div>
           </div>

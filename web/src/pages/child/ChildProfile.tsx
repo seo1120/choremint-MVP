@@ -14,6 +14,7 @@ interface ChildSession {
 export default function ChildProfile() {
   const [childSession, setChildSession] = useState<ChildSession | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [familyCode, setFamilyCode] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
@@ -33,24 +34,39 @@ export default function ChildProfile() {
       return;
     }
 
-    // Load child's avatar_url (optional, don't fail if it errors)
-    const loadAvatar = async () => {
+    // Load child's avatar_url and family code
+    const loadChildData = async () => {
       try {
         const { data: childData, error: childError } = await supabase
           .from('children')
-          .select('avatar_url')
+          .select('avatar_url, family_id')
           .eq('id', parsedSession.childId)
           .single();
         
-        if (!childError && childData?.avatar_url) {
-          setAvatarUrl(childData.avatar_url);
+        if (!childError && childData) {
+          if (childData.avatar_url) {
+            setAvatarUrl(childData.avatar_url);
+          }
+          
+          // Load family code
+          if (childData.family_id) {
+            const { data: familyData } = await supabase
+              .from('families')
+              .select('family_code')
+              .eq('id', childData.family_id)
+              .single();
+            
+            if (familyData?.family_code) {
+              setFamilyCode(familyData.family_code);
+            }
+          }
         }
-      } catch (avatarError) {
-        // Silently fail - avatar is optional
-        console.log('Could not load avatar:', avatarError);
+      } catch (error) {
+        // Silently fail - avatar and family code are optional
+        console.log('Could not load child data:', error);
       }
     };
-    loadAvatar();
+    loadChildData();
 
     // Subscribe to children table updates (포인트 실시간 갱신)
     const childrenChannel = supabase
@@ -177,8 +193,8 @@ export default function ChildProfile() {
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md mx-auto p-4">
-        <div className="bg-white rounded-3xl shadow-xl p-6 mb-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">Profile</h1>
+        <div className="bg-white rounded-3xl p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-10 text-center">Profile</h1>
 
           <div className="space-y-6">
             <div className="text-center">
@@ -196,7 +212,7 @@ export default function ChildProfile() {
                     </span>
                   )}
                 </div>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#5CE1C6] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#4BC9B0] transition-colors shadow-lg">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-[#5CE1C6] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#4BC9B0] transition-colors">
                   <input
                     type="file"
                     accept="image/*"
@@ -233,10 +249,9 @@ export default function ChildProfile() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Total Points</span>
-                <span className="text-2xl font-bold text-blue-600 flex items-center gap-1">
-                  <Icon name="star" size={20} className="md:w-6 md:h-6" />
-                  {childSession.points} pts
+                <span className="text-gray-600">Family Code</span>
+                <span className="text-lg font-semibold text-gray-800 font-mono">
+                  {familyCode || 'Loading...'}
                 </span>
               </div>
             </div>

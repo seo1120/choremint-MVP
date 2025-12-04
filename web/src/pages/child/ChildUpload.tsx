@@ -105,7 +105,7 @@ export default function ChildUpload() {
     setError('');
 
     if (!childSession || !selectedFile) {
-      setError('사진을 선택해주세요.');
+      setError('Please select a photo.');
       return;
     }
 
@@ -174,15 +174,15 @@ export default function ChildUpload() {
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-md w-full mx-auto p-4">
         {/* Header */}
-        <div className="bg-white rounded-3xl shadow-lg p-6 mb-4">
+        <div className="bg-white rounded-3xl p-6 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-2xl font-bold text-gray-800">
               {chore ? chore.title : 'Photo Upload'}
             </h1>
             {chore && (
-              <div className="bg-green-100 rounded-full px-4 py-2 flex items-center gap-1">
+              <div className="bg-[#5CE1C6]/20 rounded-full px-4 py-2 flex items-center gap-1">
                 <Icon name="star" size={16} />
-                <span className="text-green-700 font-semibold text-sm">
+                <span className="text-gray-800 font-semibold text-sm">
                   {chore.points} pts
                 </span>
               </div>
@@ -192,8 +192,10 @@ export default function ChildUpload() {
 
         {/* 집안일 단계 표시 */}
         {chore && chore.steps && chore.steps.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-lg p-6 mb-4">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">How to do it:</h2>
+          <div className="bg-white rounded-2xl p-5 border-2 border-[#5CE1C6]/30 mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              How to do it:
+            </label>
             <div className="space-y-3">
               {chore.steps.map((step) => {
                 const isCompleted = completedSteps.has(step.order);
@@ -202,7 +204,7 @@ export default function ChildUpload() {
                     key={step.order}
                     className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
                       isCompleted
-                        ? 'bg-green-50 border-2 border-green-200'
+                        ? 'bg-[#5CE1C6]/10 border-2 border-[#5CE1C6]/30'
                         : 'bg-gray-50 border-2 border-gray-200 hover:bg-gray-100'
                     }`}
                   >
@@ -210,7 +212,7 @@ export default function ChildUpload() {
                       type="checkbox"
                       checked={isCompleted}
                       onChange={() => handleStepToggle(step.order)}
-                      className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                      className="w-5 h-5 text-[#5CE1C6] rounded focus:ring-2 focus:ring-[#5CE1C6]"
                     />
                     <span className={`flex-1 ${isCompleted ? 'line-through text-gray-500' : 'text-gray-800'}`}>
                       {step.description}
@@ -224,22 +226,30 @@ export default function ChildUpload() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Photo Upload Card */}
-          <div className="bg-white rounded-2xl p-5 shadow-md border-2 border-[#5CE1C6]/30">
+          <div className="bg-white rounded-2xl p-5 border-2 border-[#5CE1C6]/30">
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Select Photo
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full px-4 py-3 bg-white border-2 border-[#5CE1C6] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5CE1C6] focus:border-[#4BC9B0] transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#5CE1C6]/10 file:text-[#5CE1C6] hover:file:bg-[#5CE1C6]/20"
-              required
-            />
+            <label className="block">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                required
+              />
+              <div className="w-full px-4 py-3 bg-white border-2 border-[#5CE1C6] rounded-xl cursor-pointer hover:bg-[#5CE1C6]/5 transition-all flex items-center justify-center gap-2">
+                <Icon name="camera" size={20} className="[&_svg_path]:fill-[#5CE1C6] [&_svg_circle]:fill-[#5CE1C6] [&_svg_rect]:fill-[#5CE1C6] [&_svg_polygon]:fill-[#5CE1C6] [&_svg_polyline]:fill-[#5CE1C6]" />
+                <span className="text-[#5CE1C6] font-semibold text-sm">
+                  {selectedFile ? selectedFile.name : 'Choose File'}
+                </span>
+              </div>
+            </label>
           </div>
 
           {/* Preview Card */}
           {preview && (
-            <div className="bg-gray-50 rounded-2xl p-4 shadow-md border-2 border-gray-100">
+            <div className="bg-gray-50 rounded-2xl p-4 border-2 border-gray-100">
               <p className="text-sm font-semibold text-gray-700 mb-2">Preview</p>
               <img
                 src={preview}
@@ -260,7 +270,7 @@ export default function ChildUpload() {
           <button
             type="submit"
             disabled={loading || !selectedFile}
-            className="w-full px-6 py-4 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-2xl hover:from-orange-500 hover:to-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+            className="w-full px-6 py-4 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-2xl hover:from-orange-500 hover:to-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">

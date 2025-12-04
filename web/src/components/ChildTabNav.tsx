@@ -6,7 +6,6 @@ export default function ChildTabNav() {
 
   const tabs = [
     { path: '/child/today', label: 'Dashboard', iconName: 'home' },
-    { path: '/child/upload', label: 'Upload', iconName: 'camera' },
     { path: '/child/rewards', label: 'Rewards', iconName: 'gift' },
     { path: '/child/profile', label: 'Settings', iconName: 'profile' },
   ];
