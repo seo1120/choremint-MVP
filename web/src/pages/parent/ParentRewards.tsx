@@ -129,7 +129,7 @@ export default function ParentRewards() {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-4 sm:mb-6 pt-6 sm:pt-8">Rewards</h1>
 
         {/* Children Points Summary */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
+        <div className="bg-white rounded-2xl p-6 mb-4">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Children Points</h2>
           {children.length === 0 ? (
             <p className="text-gray-500">No children registered.</p>
@@ -149,7 +149,7 @@ export default function ParentRewards() {
         </div>
 
         {/* Points History */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="bg-white rounded-2xl p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Points History</h2>
           {pointsHistory.length === 0 ? (
             <p className="text-gray-500">No points history.</p>
@@ -161,7 +161,7 @@ export default function ParentRewards() {
                     <p className="font-medium text-gray-800">{entry.child.nickname}</p>
                     <p className="text-sm text-gray-600">{entry.reason}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(entry.created_at).toLocaleString()}
+                      {new Date(entry.created_at).toLocaleString('en-US')}
                     </p>
                   </div>
                   <span className={`text-lg font-bold ${entry.delta > 0 ? 'text-green-600' : 'text-red-600'}`}>

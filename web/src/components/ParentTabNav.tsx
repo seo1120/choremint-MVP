@@ -7,7 +7,7 @@ export default function ParentTabNav() {
   const tabs = [
     { path: '/parent/home', label: 'Dashboard', iconName: 'home' },
     { path: '/parent/chores', label: 'Chores', iconName: 'chore' },
-    { path: '/parent/approvals', label: 'Pending', iconName: 'check' },
+    { path: '/parent/approvals', label: 'Reviews', iconName: 'check' },
     { path: '/parent/rewards', label: 'Rewards', iconName: 'gift' },
     { path: '/parent/profile', label: 'Settings', iconName: 'profile' },
   ];

@@ -35,7 +35,7 @@ export default function ParentHome() {
   const [savingOnboarding, setSavingOnboarding] = useState(false);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [showChildModal, setShowChildModal] = useState(false);
-  const [childGoalPoints, setChildGoalPoints] = useState<number>(100);
+  const [childGoalPoints, setChildGoalPoints] = useState<number | ''>('');
   const [childReward, setChildReward] = useState<string>('');
   const [savingChild, setSavingChild] = useState(false);
   const navigate = useNavigate();
@@ -387,12 +387,6 @@ export default function ParentHome() {
   };
 
 
-  const copyFamilyCode = () => {
-    if (family?.family_code) {
-      navigator.clipboard.writeText(family.family_code);
-      alert('Family code copied!');
-    }
-  };
 
   const handleOnboardingSubmit = async () => {
     if (!familyNameOnboarding.trim() || !family) return;
@@ -477,7 +471,7 @@ export default function ParentHome() {
       const { error } = await supabase
         .from('children')
         .update({
-          goal_points: childGoalPoints,
+          goal_points: childGoalPoints === '' ? null : childGoalPoints,
           reward: childReward.trim() || null,
         })
         .eq('id', selectedChild.id);
@@ -598,7 +592,7 @@ export default function ParentHome() {
                   )}
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                  {selectedChild.nickname}&apos;s Settings
+                  {selectedChild.nickname}
                 </h2>
               </div>
               <button
@@ -614,30 +608,30 @@ export default function ParentHome() {
             <div className="space-y-5 pb-2">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Goal Points (목표 포인트)
+                  Goal Points
                 </label>
                 <input
                   type="number"
                   min="1"
                   value={childGoalPoints}
-                  onChange={(e) => setChildGoalPoints(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setChildGoalPoints(e.target.value === '' ? '' : parseInt(e.target.value) || '')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5CE1C6]"
                   placeholder="Enter goal points"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Current points: {selectedChild.points} / {childGoalPoints}
+                  Current points: {selectedChild.points} / {childGoalPoints || '—'}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Reward (보상)
+                  Reward
                 </label>
                 <textarea
                   value={childReward}
                   onChange={(e) => setChildReward(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#5CE1C6] min-h-[100px]"
-                  placeholder="Enter reward description (e.g., 'Ice cream', 'New toy', 'Extra screen time')"
+                  placeholder="Enter reward description"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This reward will be shown to the child when they reach the goal.
@@ -719,36 +713,36 @@ export default function ParentHome() {
         </div>
 
         {/* Children Avatar Tabs */}
-        <div className="mb-2 flex gap-2 overflow-x-auto pb-2 px-4">
-          {children.map((child) => (
-            <div
-              key={child.id}
-              className="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer"
-              onClick={() => {
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2 px-4">
+            {children.map((child) => (
+              <div
+                key={child.id}
+                className="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer"
+                onClick={() => {
                 setSelectedChild(child);
-                setChildGoalPoints(child.goal_points || 100);
+                setChildGoalPoints(child.goal_points || '');
                 setChildReward(child.reward || '');
                 setShowChildModal(true);
-              }}
-            >
-              <div className="w-16 h-16 rounded-full border-2 border-[#5CE1C6] overflow-hidden bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center">
-                {child.avatar_url ? (
-                  <img
-                    src={child.avatar_url}
-                    alt={child.nickname}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-2xl font-bold text-white">
-                    {child.nickname[0].toUpperCase()}
-                  </span>
-                )}
+                }}
+              >
+                <div className="w-16 h-16 rounded-full border-2 border-[#5CE1C6] overflow-hidden bg-gradient-to-br from-orange-400 to-pink-400 flex items-center justify-center">
+                  {child.avatar_url ? (
+                    <img
+                      src={child.avatar_url}
+                      alt={child.nickname}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-2xl font-bold text-white">
+                      {child.nickname[0].toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs font-medium text-gray-700 text-center max-w-[80px] truncate">
+                  {child.nickname}
+                </span>
               </div>
-              <span className="text-xs font-medium text-gray-700 text-center max-w-[80px] truncate">
-                {child.nickname}
-              </span>
-            </div>
-          ))}
+            ))}
           {/* Add Child Button */}
           <div
             className="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer"
@@ -772,22 +766,6 @@ export default function ParentHome() {
             <span className="text-xs font-medium text-gray-700 text-center max-w-[80px] truncate">
               Add Child
             </span>
-          </div>
-        </div>
-        {/* Family Code */}
-        <div className="bg-white rounded-2xl p-6 mb-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-gray-600 text-sm mt-1">Family Code: 
-                <span className="font-mono font-bold ml-2">{family?.family_code || 'Loading...'}</span>
-              </p>
-            </div>
-            <button
-              onClick={copyFamilyCode}
-              className="px-4 py-2 bg-[#5CE1C6] text-white rounded-lg hover:bg-[#4BC9B0] transition-colors text-sm"
-            >
-              Copy
-            </button>
           </div>
         </div>
 

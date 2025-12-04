@@ -158,6 +158,55 @@ export default function ParentChores() {
     return titleMap[koreanTitle] || koreanTitle;
   };
 
+  // 한국어 스텝 description을 영어로 변환하는 함수
+  const getEnglishStepDescription = (koreanDescription: string): string => {
+    const stepMap: Record<string, string> = {
+      // 방 청소하기
+      '장난감을 정리하기': 'Put away toys',
+      '침대 정리하기': 'Make the bed',
+      '더러운 옷을 세탁 바구니에 넣기': 'Put dirty clothes in laundry basket',
+      '책상 정리하기': 'Organize desk',
+      // 침대 정리하기
+      '이불을 펴기': 'Spread the blanket',
+      '베개를 올바른 위치에 놓기': 'Place pillows in correct position',
+      '침대 위 물건 정리하기': 'Organize items on bed',
+      // 강아지 밥 주기
+      '강아지 밥그릇 확인하기': 'Check pet food bowl',
+      '적당한 양의 사료 넣기': 'Add appropriate amount of food',
+      '물 그릇에 깨끗한 물 채우기': 'Fill water bowl with clean water',
+      // 쓰레기 버리기
+      '방의 쓰레기통 확인하기': 'Check room trash can',
+      '쓰레기를 큰 쓰레기통에 버리기': 'Throw trash in large trash can',
+      '쓰레기통 뚜껑 닫기': 'Close trash can lid',
+      // 식탁 정리하기
+      '식탁 위 그릇들을 싱크대로 가져가기': 'Take dishes from table to sink',
+      '식탁 닦기': 'Wipe the table',
+      '의자 정리하기': 'Organize chairs',
+      // 설거지하기
+      '그릇을 물에 담그기': 'Soak dishes in water',
+      '세제로 깨끗하게 씻기': 'Wash thoroughly with soap',
+      '물로 헹구기': 'Rinse with water',
+      '건조대에 말리기': 'Dry on drying rack',
+      // 화분 물주기
+      '화분의 흙 상태 확인하기': 'Check soil condition of pot',
+      '적당한 양의 물 주기': 'Water appropriately',
+      '받침대에 넘친 물 확인하기': 'Check for overflow on saucer',
+      // 신발 정리하기
+      '흩어진 신발 모으기': 'Gather scattered shoes',
+      '신발장에 정리하기': 'Organize in shoe rack',
+      '신발장 문 닫기': 'Close shoe rack door',
+    };
+    return stepMap[koreanDescription] || koreanDescription;
+  };
+
+  // 템플릿의 스텝들을 영어로 변환하는 함수
+  const translateTemplateSteps = (steps: ChoreStep[]): ChoreStep[] => {
+    return steps.map(step => ({
+      ...step,
+      description: getEnglishStepDescription(step.description)
+    }));
+  };
+
   // 템플릿에서 바로 집안일 추가
   const handleAddFromTemplate = async (template: ChoreTemplate) => {
     setLoading(true);
@@ -176,6 +225,11 @@ export default function ParentChores() {
       // 영어 제목 사용
       const englishTitle = getEnglishTitle(template.title);
 
+      // 영어 스텝 사용
+      const englishSteps = template.steps && template.steps.length > 0 
+        ? translateTemplateSteps(template.steps) 
+        : null;
+
       // Create chore with steps and icon
       const { data: _newChore, error: choreError } = await supabase
         .from('chores')
@@ -185,7 +239,7 @@ export default function ParentChores() {
           points: template.points,
           photo_required: true,
           active: true,
-          steps: template.steps && template.steps.length > 0 ? template.steps : null,
+          steps: englishSteps,
           icon: getIconName(template.icon),
         })
         .select()
@@ -965,7 +1019,7 @@ export default function ParentChores() {
                 <div>
                   <h5 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">Steps</h5>
                   <div className="space-y-2">
-                    {selectedTemplateForDetail.steps.map((step, index) => (
+                    {translateTemplateSteps(selectedTemplateForDetail.steps).map((step, index) => (
                       <div key={index} className="flex items-start gap-2 sm:gap-3 p-3 bg-gray-50 rounded-2xl">
                         <span className="text-sm sm:text-base font-semibold text-gray-600 w-6 sm:w-8 flex items-center justify-center flex-shrink-0">{step.order}.</span>
                         <p className="flex-1 text-sm sm:text-base text-gray-700">{step.description}</p>

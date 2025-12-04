@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import ParentTabNav from '../../components/ParentTabNav';
 import Icon from '../../components/Icon';
@@ -20,20 +20,47 @@ interface Submission {
   } | null;
 }
 
+interface ChoreAssignment {
+  id: string;
+  chore_id: string;
+  child_id: string;
+  due_date: string;
+  status: string;
+  created_at: string;
+  child: {
+    nickname: string;
+  };
+  chore: {
+    title: string;
+    points: number;
+    icon?: string;
+  };
+}
+
 export default function ParentApprovals() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [view, setView] = useState<'pending' | 'assigned'>(() => {
+    const viewParam = searchParams.get('view');
+    return viewParam === 'assigned' ? 'assigned' : 'pending';
+  });
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [assignments, setAssignments] = useState<ChoreAssignment[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadSubmissions();
-  }, []);
+    if (view === 'pending') {
+      loadSubmissions();
+    } else {
+      loadAssignments();
+    }
+  }, [view]);
 
   useEffect(() => {
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('parent-approvals')
+    // Subscribe to realtime updates for submissions
+    const submissionsChannel = supabase
+      .channel('parent-approvals-submissions')
       .on(
         'postgres_changes',
         {
@@ -42,15 +69,36 @@ export default function ParentApprovals() {
           table: 'submissions',
         },
         () => {
-          loadSubmissions();
+          if (view === 'pending') {
+            loadSubmissions();
+          }
+        }
+      )
+      .subscribe();
+
+    // Subscribe to realtime updates for assignments
+    const assignmentsChannel = supabase
+      .channel('parent-approvals-assignments')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chore_assignments',
+        },
+        () => {
+          if (view === 'assigned') {
+            loadAssignments();
+          }
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(submissionsChannel);
+      supabase.removeChannel(assignmentsChannel);
     };
-  }, []);
+  }, [view]);
 
   const loadSubmissions = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -85,6 +133,58 @@ export default function ParentApprovals() {
     } catch (error) {
       console.error('Error loading submissions:', error);
     }
+  };
+
+  const loadAssignments = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/');
+      return;
+    }
+
+    try {
+      const { data: familyData } = await supabase
+        .from('families')
+        .select('*')
+        .eq('parent_id', session.user.id)
+        .single();
+
+      if (familyData) {
+        // Get all children in the family
+        const { data: childrenData } = await supabase
+          .from('children')
+          .select('id')
+          .eq('family_id', familyData.id);
+
+        if (childrenData && childrenData.length > 0) {
+          const childIds = childrenData.map(c => c.id);
+          
+          const { data } = await supabase
+            .from('chore_assignments')
+            .select(`
+              *,
+              child:children(nickname),
+              chore:chores(title, points, icon)
+            `)
+            .in('child_id', childIds)
+            .order('due_date', { ascending: true })
+            .order('created_at', { ascending: false });
+
+          if (data) {
+            setAssignments(data as ChoreAssignment[]);
+          }
+        } else {
+          setAssignments([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading assignments:', error);
+    }
+  };
+
+  const handleToggleView = (newView: 'pending' | 'assigned') => {
+    setView(newView);
+    setSearchParams({ view: newView });
   };
 
   const handleApprove = async (submissionId: string) => {
@@ -139,12 +239,76 @@ export default function ParentApprovals() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'done':
+        return 'bg-green-100 text-green-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'done':
+        return 'Done';
+      case 'expired':
+        return 'Expired';
+      default:
+        return 'To Do';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white pb-20">
       <div className="max-w-4xl mx-auto p-3 sm:p-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-6 sm:mb-8 pt-6 sm:pt-8">Pending Approvals</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-8 sm:mb-8 pt-6 sm:pt-8">
+          {view === 'pending' ? 'Pending Approvals' : 'Assigned Chores'}
+        </h1>
 
-        {submissions.length === 0 ? (
+        {/* Toggle Buttons */}
+        <div className="mb-6 px-2 sm:px-0">
+          <div className="flex bg-gray-100 rounded-full p-1">
+            <button
+              type="button"
+              onClick={() => handleToggleView('pending')}
+              className={`flex-1 py-2 px-4 rounded-full font-medium transition-all ${
+                view === 'pending'
+                  ? 'bg-white text-[#5CE1C6] shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Pending
+            </button>
+            <button
+              type="button"
+              onClick={() => handleToggleView('assigned')}
+              className={`flex-1 py-2 px-4 rounded-full font-medium transition-all ${
+                view === 'assigned'
+                  ? 'bg-white text-[#5CE1C6] shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Assigned
+            </button>
+          </div>
+        </div>
+
+        {/* Pending View */}
+        {view === 'pending' && (
+          <>
+            {submissions.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center">
             <p className="text-gray-500">No pending submissions.</p>
           </div>
@@ -175,6 +339,69 @@ export default function ParentApprovals() {
               </div>
             ))}
           </div>
+        )}
+          </>
+
+        )}
+
+        {/* Assigned View */}
+        {view === 'assigned' && (
+          <>
+            {assignments.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 text-center">
+                <p className="text-gray-500">No assigned chores.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 px-2 sm:px-0">
+                {assignments.map((assignment) => (
+                  <div
+                    key={assignment.id}
+                    className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {assignment.chore.icon && !assignment.chore.icon.match(/[\u{1F300}-\u{1F9FF}]/u) ? (
+                            <Icon name={assignment.chore.icon} size={24} />
+                          ) : assignment.chore.icon ? (
+                            <span className="text-2xl">{assignment.chore.icon}</span>
+                          ) : (
+                            <Icon name="chore" size={24} />
+                          )}
+                          <h3 className="font-bold text-gray-800 text-base sm:text-lg">
+                            {assignment.chore.title}
+                          </h3>
+                        </div>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <span className="font-semibold">Child:</span>
+                            <span>{assignment.child.nickname}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="font-semibold">Due Date:</span>
+                            <span>{formatDate(assignment.due_date)}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="font-semibold">Assigned Date:</span>
+                            <span>{formatDate(assignment.created_at)}</span>
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <Icon name="star" size={16} />
+                            <span>{assignment.chore.points} points</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(assignment.status)}`}>
+                          {getStatusText(assignment.status)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
         {/* Modal for selected submission */}
