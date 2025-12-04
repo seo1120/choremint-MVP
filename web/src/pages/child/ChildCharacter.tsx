@@ -325,11 +325,33 @@ export default function ChildCharacter() {
       const imgY = 80;
       ctx.drawImage(characterImg, imgX, imgY, imgSize, imgSize);
 
-      // 앱 로고/타이틀 (이모지 + 텍스트)
-      ctx.fillStyle = '#4CAF50';
+      // 앱 로고/타이틀 (아이콘 + 텍스트)
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve) => {
+        logoImg.onload = () => resolve();
+        logoImg.onerror = () => resolve(); // 로고 로드 실패해도 계속 진행
+        logoImg.src = '/choremint_app_icon.png';
+      });
+
+      const logoSize = 28;
+      const logoTextGap = 8;
+      const titleText = 'ChoreMint';
       ctx.font = 'bold 24px "Segoe UI", Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('🌿 ChoreMint', width / 2, 420);
+      const textWidth = ctx.measureText(titleText).width;
+      const totalWidth = logoSize + logoTextGap + textWidth;
+      const startX = (width - totalWidth) / 2;
+
+      // 로고 이미지 그리기
+      if (logoImg.complete && logoImg.naturalWidth > 0) {
+        ctx.drawImage(logoImg, startX, 420 - logoSize + 4, logoSize, logoSize);
+      }
+
+      // 텍스트 그리기
+      ctx.fillStyle = '#4CAF50';
+      ctx.textAlign = 'left';
+      ctx.fillText(titleText, startX + logoSize + logoTextGap, 420);
 
       // 미션 이름
       ctx.fillStyle = '#2E7D32';
